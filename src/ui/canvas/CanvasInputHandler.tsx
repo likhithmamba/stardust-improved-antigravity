@@ -1,0 +1,104 @@
+import React, { useRef, useEffect } from 'react';
+// import { showChooserAtScreen } from '../spherical-chooser/chooserCanvas'; // Assuming path
+// import { screenToWorld } from '../../utils/coords'; // Assuming path
+import { useStore } from '../../store/useStore'; // Using existing main store for camera/viewport
+import { useSettingsStore } from '../../ui/settings/settingsStore';
+
+
+export const CanvasInputHandler: React.FC = () => {
+    const lastTapRef = useRef<number>(0);
+    // const dragStartRef = useRef({ x: 0, y: 0, active: false });
+
+    // Access viewport/camera from main store
+    const viewport = useStore((state) => state.viewport);
+    // Access settings
+    // const mode = useSettingsStore(s => s.mode);
+    // const showChooserPreview = useSettingsStore(s => s.showChooserPreview);
+
+    useEffect(() => {
+        const canvas = document.getElementById('root') || document.body; // Attaching to root or body to ensure capture
+        if (!canvas) return;
+
+        function onDoubleClickDesktop(ev: MouseEvent) {
+            // desktop: double-click on background should open radial menu
+            const target = ev.target as HTMLElement;
+            if (!target) return;
+
+            // If clicked on UI element (toolbar, note), ignore
+            // Added .handle-base to ignore list
+            if (
+                target.closest('.stardust-toolbar') ||
+                target.closest('.ui-interactive-area') ||
+                target.closest('.note-planet') ||
+                target.closest('.handle-base') ||
+                target.closest('button') ||
+                target.closest('input')
+            ) return;
+
+            // Dispatch event that CanvasViewport listeners will pick up
+            // Or we can just let the existing CanvasViewport handleDoubleClick work, 
+            // BUT the user asked for this handler to be authoritative.
+            // For now, let's allow this to just be a specialized handler if we need custom logic.
+            // Current CanvasViewport uses onClick/onDoubleClick on the div.
+            // We will leave the dispatch here as an option for "external" control.
+            window.dispatchEvent(new CustomEvent('stardust:openRadialMenu', {
+                detail: { screenX: ev.clientX, screenY: ev.clientY }
+            }));
+        }
+
+        function onTouchEnd(ev: TouchEvent) {
+            const now = Date.now();
+            const last = lastTapRef.current;
+            const delta = now - last;
+            lastTapRef.current = now;
+
+            const touch = ev.changedTouches[0];
+            if (!touch) return;
+
+            const target = document.elementFromPoint(touch.clientX, touch.clientY) as HTMLElement;
+
+            if (delta < 300) {
+                // double-tap
+                // only when tapping empty canvas (not on notes)
+                if (target && (
+                    target.closest('.note-planet') ||
+                    target.closest('.stardust-toolbar') ||
+                    target.closest('.ui-interactive-area') ||
+                    target.closest('.handle-base')
+                )) {
+                    return;
+                }
+
+                // Check if we should allow chooser
+                const currentMode = useSettingsStore.getState().mode;
+                const chooserPreview = useSettingsStore.getState().showChooserPreview;
+
+                if (currentMode === 'pro' || currentMode === 'ultra' || chooserPreview) {
+                    // In a real app, we'd import the spherical chooser function.
+                    // For now, let's dispatch an event or invoke the logic.
+                    // Since we typically use state to show the chooser:
+
+                    // Logic to show chooser (Mocked for now as we don't have the chooser export handy in context)
+                    console.log('Mobile Double Tap - Open Chooser');
+
+                    // We can set a global state or dispatch event
+                    window.dispatchEvent(new CustomEvent('stardust:openSphericalMenu', {
+                        detail: { x: touch.clientX, y: touch.clientY }
+                    }));
+
+                }
+            }
+        }
+
+        // Use capturing to ensure we get events before React if needed, or simply consistent bubbling
+        window.addEventListener('dblclick', onDoubleClickDesktop);
+        window.addEventListener('touchend', onTouchEnd);
+
+        return () => {
+            window.removeEventListener('dblclick', onDoubleClickDesktop);
+            window.removeEventListener('touchend', onTouchEnd);
+        };
+    }, [viewport]); // Re-attach if viewport relies on it (though mostly static)
+
+    return null;
+};

@@ -51,22 +51,31 @@ export class ParticleSystem {
         };
     }
 
-    update(dt: number) {
+    update(_dt: number) {
         this.particles.forEach(p => {
             p.x += p.vx;
             p.y += p.vy;
-            p.life -= dt * 0.001; // Decay
 
-            if (p.life <= 0) {
-                Object.assign(p, this.createParticle());
-            }
+            // Limit bounds slightly larger than screen to avoid pop-in
+            if (p.x < -100) p.x = this.bounds.w + 100;
+            if (p.x > this.bounds.w + 100) p.x = -100;
+            if (p.y < -100) p.y = this.bounds.h + 100;
+            if (p.y > this.bounds.h + 100) p.y = -100;
+
+            // Twinkle effect
+            const time = Date.now() * 0.001;
+            // Sine wave based on particle index/random + time
+            const brightness = Math.sin(time * 2 + p.x * 0.1) * 0.3 + 0.7;
+
+            // Store calculated alpha for draw
+            (p as any).alpha = p.life * brightness;
         });
     }
 
     draw(ctx: CanvasRenderingContext2D) {
         this.particles.forEach(p => {
             ctx.fillStyle = p.color;
-            ctx.globalAlpha = p.life;
+            ctx.globalAlpha = (p as any).alpha ?? p.life;
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
             ctx.fill();

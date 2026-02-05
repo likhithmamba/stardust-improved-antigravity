@@ -24,32 +24,54 @@ export const BlackHole: React.FC<BlackHoleProps> = ({ isActive }) => {
     // Passing as prop is cleaner for now.
 
     return (
-        <div className="fixed bottom-8 right-8 w-32 h-32 pointer-events-none z-40 flex items-center justify-center">
-            <div className="relative w-full h-full flex items-center justify-center">
-                {/* Event Horizon */}
+        <div className="fixed bottom-8 right-8 w-48 h-48 pointer-events-none z-40 flex items-center justify-center">
+            {/* Gravity Well / Distortion Field */}
+            <motion.div
+                className="absolute inset-0 rounded-full"
+                animate={{
+                    scale: isActive ? 1.5 : 1, // Stronger expansion
+                    rotate: isActive ? 180 : 0 // Add some rotation to the distortion
+                }}
+                transition={{ duration: 0.8, ease: "circOut" }}
+                style={{
+                    background: 'radial-gradient(circle, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 70%)',
+                    backdropFilter: 'blur(8px)', // heavier blur
+                }}
+            />
+
+            <div className={`relative flex items-center justify-center transition-transform duration-500 ${isActive ? 'scale-150' : 'scale-100'}`}>
+                {/* Accretion Disk - Glow */}
+                <div className={`absolute w-40 h-10 bg-orange-500 rounded-full blur-xl mix-blend-screen transition-all duration-300 ${isActive ? 'opacity-100 animate-pulse' : 'opacity-50'}`} />
+
+                {/* Accretion Disk - Rings (Spin Faster on Active) */}
                 <motion.div
-                    className="absolute w-24 h-24 bg-black rounded-full shadow-[0_0_50px_#000]"
-                    animate={{
-                        scale: isActive ? 1.5 : 1,
-                        rotate: 360
+                    className="absolute w-48 h-48 rounded-full"
+                    style={{
+                        background: 'conic-gradient(from 0deg, transparent 0%, #f97316 20%, transparent 40%, #ea580c 60%, transparent 80%)',
+                        maskImage: 'radial-gradient(transparent 50%, black 55%)',
+                        WebkitMaskImage: 'radial-gradient(transparent 50%, black 55%)'
                     }}
-                    transition={{
-                        rotate: { duration: 10, repeat: Infinity, ease: "linear" },
-                        scale: { duration: 0.3 }
-                    }}
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: isActive ? 2 : 8, repeat: Infinity, ease: "linear" }}
                 />
 
-                {/* Accretion Disk */}
-                <motion.div
-                    className="absolute w-32 h-32 rounded-full border-4 border-t-purple-500 border-r-transparent border-b-orange-500 border-l-transparent opacity-80 blur-sm"
-                    animate={{ rotate: -360 }}
-                    transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                {/* Event Horizon (Pure Black) */}
+                <div className="absolute w-20 h-20 bg-black rounded-full shadow-[0_0_30px_rgba(249,115,22,0.6),inset_0_0_20px_rgba(255,255,255,0.2)] z-10 transition-shadow duration-300"
+                    style={{ boxShadow: isActive ? '0 0 60px rgba(249,115,22,0.9), inset 0 0 30px rgba(255,255,255,0.4)' : undefined }}
                 />
-                <motion.div
-                    className="absolute w-40 h-40 rounded-full border-2 border-t-transparent border-r-white border-b-transparent border-l-white opacity-30"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                />
+
+                {/* Photon Sphere (Thin Ring) */}
+                <div className="absolute w-22 h-22 rounded-full border border-white/40 blur-[0.5px] z-20" />
+            </div>
+
+            {/* Label */}
+            <div className={`absolute -top-12 text-xs font-bold tracking-[0.3em] text-orange-500/80 transition-all duration-300 ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+                SINGULARITY
+            </div>
+
+            {/* Suction Status Text */}
+            <div className={`absolute -bottom-12 text-[10px] font-mono text-orange-300/60 transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-0'}`}>
+                RELEASE TO INCINERATE
             </div>
         </div>
     );

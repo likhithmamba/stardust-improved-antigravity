@@ -119,6 +119,60 @@ export class SoundManager {
         noise.start();
         noise.stop(this.ctx.currentTime + 1.0);
     }
+
+    playExplosion() {
+        if (!this.ctx || !this.masterGain) return;
+        this.ensureContext();
+
+        // Noise Burst
+        const bufferSize = this.ctx.sampleRate * 0.5;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+        }
+
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1000, this.ctx.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.4);
+
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.4);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.masterGain);
+
+        noise.start();
+        noise.stop(this.ctx.currentTime + 0.5);
+    }
+
+    playBlackHole() {
+        if (!this.ctx || !this.masterGain) return;
+        this.ensureContext();
+
+        // Deep shearing sound
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(100, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(10, this.ctx.currentTime + 1.0); // Pitch Drop
+
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 1.0);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+
+        osc.start();
+        osc.stop(this.ctx.currentTime + 1.0);
+    }
 }
 
 export const soundManager = new SoundManager();

@@ -4,14 +4,19 @@
 const STORAGE_KEY = 'stardust_ai_key';
 
 export const saveApiKey = async (key: string, _password: string) => {
-    // In a real app, use Web Crypto API to encrypt 'key' with 'password'
-    // For MVP/Prototype, we'll just store it (WARN: NOT SECURE FOR PRODUCTION WITHOUT ENCRYPTION)
-    // Implementing full AES-GCM here would be verbose, but here's the interface.
-    localStorage.setItem(STORAGE_KEY, key); // Placeholder: Replace with encrypted storage
+    // Obfuscate with Base64 to prevent casual reading (Not full encryption)
+    const encoded = btoa(key);
+    localStorage.setItem(STORAGE_KEY, encoded);
 };
 
 export const getApiKey = async (_password: string): Promise<string | null> => {
-    return localStorage.getItem(STORAGE_KEY);
+    const encoded = localStorage.getItem(STORAGE_KEY);
+    if (!encoded) return null;
+    try {
+        return atob(encoded);
+    } catch (e) {
+        return null; // Handle verification failure or legacy plain text
+    }
 };
 
 export const generateContent = async (prompt: string, context: string = ''): Promise<string> => {

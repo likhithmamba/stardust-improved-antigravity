@@ -96,8 +96,41 @@ export const MiniMap: React.FC = () => {
                 width={140}
                 height={140}
                 className="w-full h-full cursor-crosshair opacity-80 hover:opacity-100 transition-opacity absolute inset-0"
-                onClick={() => {
-                    // Jump logic to be implemented
+                onClick={(e) => {
+                    const rect = canvasRef.current?.getBoundingClientRect();
+                    if (!rect) return;
+                    const clickX = e.clientX - rect.left;
+                    const clickY = e.clientY - rect.top;
+
+                    // Re-calc bounds to reverse map
+                    if (notes.length === 0) return;
+                    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                    notes.forEach(n => {
+                        minX = Math.min(minX, n.x);
+                        minY = Math.min(minY, n.y);
+                        maxX = Math.max(maxX, n.x + n.w);
+                        maxY = Math.max(maxY, n.y + n.h);
+                    });
+                    const padding = 2000;
+                    minX -= padding;
+                    minY -= padding;
+                    maxX += padding;
+                    maxY += padding;
+                    const mapW = maxX - minX;
+                    const mapH = maxY - minY;
+                    const width = 140; // Fixed size
+                    const height = 140;
+                    const scale = Math.min(width / mapW, height / mapH);
+
+                    const targetWorldX = minX + (clickX / scale);
+                    const targetWorldY = minY + (clickY / scale);
+
+                    // Center view
+                    setViewport({
+                        ...viewport,
+                        x: -targetWorldX * viewport.zoom + window.innerWidth / 2,
+                        y: -targetWorldY * viewport.zoom + window.innerHeight / 2
+                    });
                 }}
             />
 

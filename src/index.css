@@ -1,35 +1,54 @@
 @import "tailwindcss";
 
-@theme {
-  --animate-pulse-glow: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  --animate-spin-slow: spin 20s linear infinite;
-  --animate-float: float 6s ease-in-out infinite;
 
-  @keyframes pulse-glow {
 
-    0%,
-    100% {
-      opacity: 1;
-      box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
-    }
+/* Standard Keyframes */
+@keyframes pulse-glow {
 
-    50% {
-      opacity: 0.7;
-      box-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
-    }
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
   }
 
-  @keyframes float {
-
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-
-    50% {
-      transform: translateY(-10px);
-    }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
   }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin 20s linear infinite;
 }
 
 :root {
@@ -57,12 +76,11 @@
 }
 
 /* Utility glass class */
-/* Utility glass class */
 .glass {
   background: rgba(200, 220, 255, 0.08);
   /* Slightly bluer/lighter for better visibility */
-  backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
 }
 
@@ -102,8 +120,8 @@
   z-index: 60;
   background: var(--ui-pill-bg);
   border: 1px solid var(--ui-pill-border);
-  backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
 }
 
 .stardust-toolbar button {
@@ -136,8 +154,8 @@
   z-index: 60;
   background: var(--ui-pill-bg);
   border: 1px solid var(--ui-pill-border);
-  backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
 }
 
 /* Helper classes */
@@ -164,14 +182,11 @@ body {
   background-color: var(--color-void);
   font-family: 'Inter', sans-serif;
   color: #e2e8f0;
-
-
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+#root {
+  width: 100%;
+  height: 100%;
 }
 
 ::-webkit-scrollbar-track {
@@ -187,12 +202,59 @@ body {
   background: #4b5563;
 }
 
+/* Utility to hide scrollbar but allow scrolling */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Custom sleek scrollbar for panels */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 99px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
 /* Text Effects */
 .font-effect-cosmic {
   background: linear-gradient(to right, #c084fc, #6366f1);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+.stardust-minimap {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  z-index: 50;
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
 }
 
 .font-effect-glitter-gold {
@@ -221,6 +283,7 @@ body {
   transition: box-shadow 0.3s ease;
   overflow: visible;
   /* Allow rings/glows to spill out */
+  pointer-events: auto;
 }
 
 .note-planet:focus-within {
@@ -228,9 +291,34 @@ body {
   z-index: 50;
 }
 
+/* Extracted Note Content Styles */
+.note-input {
+  font-size: calc(var(--planet-size) / 10);
+  background: transparent;
+  border: none;
+  outline: none;
+  min-width: 50%;
+  caret-color: white;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: pointer;
+  color: inherit;
+  font-family: inherit;
+  text-align: center;
+}
+
+.note-input.editing {
+  -webkit-user-select: text;
+  user-select: text;
+  cursor: text;
+}
+
+.note-input.selected {
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
 .note-content {
-  width: 70%;
-  height: 70%;
+  /* removed 70% width/height to fix centering offset */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -431,4 +519,45 @@ body {
   width: 1200px;
   height: 1200px;
   font-size: 50px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* PART 2: PRO MODE VISUAL ENHANCEMENTS */
+
+
+.planet-sun-pro {
+  background: radial-gradient(circle at 30% 30%, #fef08a, #facc15, #b45309);
+  box-shadow: 0 0 60px #facc15, inset 0 0 40px rgba(255, 255, 255, 0.5);
+}
+
+.planet-jupiter-pro {
+  background: radial-gradient(circle at 30% 30%, #ffedd5, #fdba74, #ea580c);
+  /* Striped look via gradient not easy here, settling for rich gradient */
+  box-shadow: 0 0 40px #fdba74, inset -20px -20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.planet-earth-pro {
+  background: radial-gradient(circle at 40% 40%, #7dd3fc, #0284c7, #0c4a6e);
+  box-shadow: 0 0 30px #38bdf8, inset -10px -10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.planet-mars-pro {
+  background: radial-gradient(circle at 40% 40%, #fda4af, #f43f5e, #881337);
+  box-shadow: 0 0 25px #f43f5e, inset -8px -8px 20px rgba(0, 0, 0, 0.6);
+}
+
+.planet-saturn-pro {
+  background: radial-gradient(circle at center, #fef3c7, #d97706);
+  box-shadow: 0 0 30px #fbbf24;
+}
+
+.planet-asteroid-pro {
+  box-shadow: inset -5px -5px 10px rgba(0, 0, 0, 0.7);
+}
+
+/* Toolbar Skins */
+.skin-glass {
+  --ui-pill-bg: rgba(255, 255, 255, 0.1);
+  --ui-pill-border: rgba(255, 255, 255, 0.2);
+  --color-text: #fff;
 }
