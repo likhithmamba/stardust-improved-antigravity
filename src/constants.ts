@@ -14,6 +14,7 @@ export const NoteType = {
     Asteroid: 'asteroid',
     Comet: 'comet',
     BlackHole: 'black-hole',
+    Moon: 'moon',
 } as const;
 
 export type NoteType = typeof NoteType[keyof typeof NoteType];
@@ -60,6 +61,13 @@ export const NOTE_STYLES = {
         className: 'shadow-[0_0_60px_rgba(59,130,246,0.6)] bg-blue-500/20 backdrop-blur-xl border border-blue-400/50',
         label: 'Earth',
         color: '#3b82f6',
+    },
+    [NoteType.Moon]: {
+        width: 100,
+        height: 100,
+        className: 'shadow-[0_0_20px_rgba(226,232,240,0.4)] bg-slate-200/30 backdrop-blur-md border border-slate-300/50',
+        label: 'Moon',
+        color: '#e2e8f0',
     },
     [NoteType.Mars]: {
         width: 320,
@@ -167,4 +175,4 @@ export const LOGICAL_SLOT_RADIUS: Record<string, number> = {
 };
 
 // Unified View Mode Definition
-export type ViewMode = 'free' | 'orbital' | 'constellation' | 'nebula' | 'project' | 'matrix' | 'prism' | 'timeline' | 'void' | 'stream';
+export type ViewMode = 'free' | 'orbital' | 'constellation' | 'nebula' | 'project' | 'matrix' | 'prism' | 'timeline' | 'void' | 'stream' | 'archive';

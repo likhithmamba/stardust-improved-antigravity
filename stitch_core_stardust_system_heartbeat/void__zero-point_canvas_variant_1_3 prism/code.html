@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MATRIX: Inner Planet Grid V1</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1919e6",
+                        "mercury": "#A5A5AF",
+                        "venus": "#E3BB76",
+                        "earth": "#2271B3",
+                        "mars": "#E27B58",
+                        "background-dark": "#05050A",
+                    },
+                    fontFamily: {
+                        "display": ["Newsreader", "serif"],
+                        "sans": ["Noto Sans", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        :root {
+            --starlight: rgba(255, 255, 255, 0.1);
+        }
+        .deep-space {
+            background: radial-gradient(circle at center, #0B0B1A 0%, #020205 100%);
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+        }
+        .gravity-well {
+            position: relative;
+            height: 100%;
+            transition: background 0.5s ease;
+        }
+        .gravity-well::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, transparent 0%, var(--glow-color) 100%);
+            opacity: 0.05;
+            pointer-events: none;
+        }
+        .starlight-divider {
+            width: 1px;
+            background: linear-gradient(180deg, transparent, var(--starlight), transparent);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+        }
+        .planet-note {
+            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.05), 
+                        0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .planet-note:hover {
+            transform: scale(1.05) translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.06);
+        }
+        .planet-texture {
+            mask-image: radial-gradient(circle at 30% 30%, black 0%, transparent 80%);
+            mix-blend-mode: overlay;
+        }
+        .star-fab {
+            background: radial-gradient(circle at center, #ffffff 0%, #3b82f6 40%, transparent 70%);
+            filter: blur(1px);
+        }
+        .glass-sphere {
+            backdrop-filter: blur(8px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-background-dark font-sans text-white/90 selection:bg-primary/30 overflow-hidden">
+<div class="deep-space">
+<div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(white 1px, transparent 1px); background-size: 100px 100px;"></div>
+<div class="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-900/10 rounded-full blur-[120px]"></div>
+<div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-900/10 rounded-full blur-[120px]"></div>
+</div>
+<main class="flex h-screen w-full relative">
+<section class="gravity-well flex-1 flex flex-col items-center pt-24 px-4 gap-8" style="--glow-color: #A5A5AF;">
+<div class="text-center mb-4">
+<span class="text-[10px] tracking-[0.4em] uppercase text-mercury font-bold">Inner-01</span>
+<h2 class="font-display italic text-2xl text-mercury/80">Mercury</h2>
+</div>
+<div class="planet-note w-24 h-24 rounded-full flex flex-col items-center justify-center p-4 text-center cursor-pointer relative overflow-hidden group">
+<div class="absolute inset-0 bg-mercury/10 planet-texture"></div>
+<p class="text-[10px] leading-tight font-medium relative z-10 group-hover:opacity-0 transition-opacity">Quick thoughts &amp; sparks</p>
+<div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-mercury">open_in_full</span>
+</div>
+</div>
+<div class="planet-note w-20 h-20 rounded-full flex items-center justify-center cursor-pointer overflow-hidden group">
+<div class="absolute inset-0 bg-mercury/20 planet-texture"></div>
+<span class="material-symbols-outlined text-white/40 group-hover:text-white transition-colors">notes</span>
+</div>
+</section>
+<div class="starlight-divider"></div>
+<section class="gravity-well flex-1 flex flex-col items-center pt-32 px-4 gap-12" style="--glow-color: #E3BB76;">
+<div class="text-center mb-4">
+<span class="text-[10px] tracking-[0.4em] uppercase text-venus font-bold">Inner-02</span>
+<h2 class="font-display italic text-2xl text-venus/80">Venus</h2>
+</div>
+<div class="planet-note w-48 h-48 rounded-full flex flex-col items-center justify-center p-8 text-center cursor-pointer relative overflow-hidden group">
+<div class="absolute inset-0 bg-venus/20 planet-texture"></div>
+<h3 class="text-xs font-bold tracking-widest uppercase mb-2 relative z-10">Atmospheric Data</h3>
+<p class="text-[11px] text-white/60 relative z-10">High pressure projects and dense research papers.</p>
+</div>
+</section>
+<div class="starlight-divider"></div>
+<section class="gravity-well flex-1 flex flex-col items-center pt-20 px-4 gap-10" style="--glow-color: #2271B3;">
+<div class="text-center mb-4">
+<span class="text-[10px] tracking-[0.4em] uppercase text-earth font-bold">Inner-03</span>
+<h2 class="font-display italic text-2xl text-earth/80">Earth</h2>
+</div>
+<div class="planet-note w-56 h-56 rounded-full flex flex-col items-center justify-center p-10 text-center cursor-pointer relative overflow-hidden group">
+<div class="absolute inset-0 bg-earth/20 planet-texture" style="background-image: radial-gradient(circle at 70% 20%, #4ade8022 0%, transparent 60%);"></div>
+<h3 class="text-sm font-bold tracking-widest uppercase mb-2 relative z-10">Living Archive</h3>
+<p class="text-xs text-white/70 relative z-10">Main life-notes and daily reflections. The blue-marble core of your matrix.</p>
+<div class="mt-4 flex gap-1 relative z-10">
+<div class="w-1.5 h-1.5 rounded-full bg-earth"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-white/20"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-white/20"></div>
+</div>
+</div>
+<div class="planet-note w-32 h-32 rounded-full flex items-center justify-center cursor-pointer overflow-hidden">
+<div class="absolute inset-0 bg-earth/10 planet-texture"></div>
+<p class="text-[10px] font-bold uppercase tracking-widest">Active Projects</p>
+</div>
+</section>
+<div class="starlight-divider"></div>
+<section class="gravity-well flex-1 flex flex-col items-center pt-40 px-4 gap-8" style="--glow-color: #E27B58;">
+<div class="text-center mb-4">
+<span class="text-[10px] tracking-[0.4em] uppercase text-mars font-bold">Inner-04</span>
+<h2 class="font-display italic text-2xl text-mars/80">Mars</h2>
+</div>
+<div class="planet-note w-36 h-36 rounded-full flex flex-col items-center justify-center p-6 text-center cursor-pointer relative overflow-hidden group">
+<div class="absolute inset-0 bg-mars/20 planet-texture"></div>
+<h3 class="text-xs font-bold tracking-widest uppercase mb-1 relative z-10">Red Planet</h3>
+<p class="text-[10px] text-white/60 relative z-10">Action items, goals, and competitive drive.</p>
+</div>
+<div class="planet-note w-28 h-28 rounded-full flex items-center justify-center cursor-pointer overflow-hidden group">
+<div class="absolute inset-0 bg-mars/15 planet-texture"></div>
+<span class="material-symbols-outlined text-mars/60 group-hover:text-mars transition-colors" style="font-size: 32px;">rocket_launch</span>
+</div>
+</section>
+</main>
+<div class="fixed top-0 left-0 right-0 p-6 flex justify-between items-center pointer-events-none">
+<div class="flex items-center gap-4 pointer-events-auto">
+<div class="size-6 text-blue-500">
+<svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M24 0.757355L47.2426 24L24 47.2426L0.757355 24L24 0.757355ZM21 35.7574V12.2426L9.24264 24L21 35.7574Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h1 class="text-xs font-bold tracking-[0.4em] uppercase text-white/50">Matrix System // Inner Orbit</h1>
+</div>
+<div class="flex items-center gap-6 pointer-events-auto">
+<button class="text-[10px] font-bold tracking-widest uppercase text-white/40 hover:text-white transition-colors">Orbit View</button>
+<button class="text-[10px] font-bold tracking-widest uppercase text-white transition-colors border-b border-blue-500 pb-1">Matrix Grid</button>
+<button class="text-[10px] font-bold tracking-widest uppercase text-white/40 hover:text-white transition-colors">Void Mode</button>
+</div>
+</div>
+<div class="fixed bottom-12 left-1/2 -translate-x-1/2 z-50">
+<div class="glass-sphere size-20 rounded-full flex items-center justify-center cursor-pointer group hover:scale-110 transition-transform">
+<div class="star-fab size-12 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.4)]">
+<span class="material-symbols-outlined text-white" style="font-size: 28px;">add</span>
+</div>
+<div class="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/5 backdrop-blur-md px-3 py-1 rounded border border-white/10 whitespace-nowrap">
+<span class="text-[10px] tracking-widest uppercase font-bold">Forge New Note</span>
+</div>
+</div>
+</div>
+<div class="fixed bottom-8 left-8 flex flex-col gap-4">
+<div class="size-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-white/60" style="font-size: 20px;">search</span>
+</div>
+<div class="size-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center cursor-pointer hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-white/60" style="font-size: 20px;">auto_awesome</span>
+</div>
+</div>
+<div class="fixed bottom-8 right-8 flex items-center gap-4">
+<div class="text-right">
+<p class="text-[10px] text-white/40 uppercase tracking-widest">Last Sync</p>
+<p class="text-[10px] font-bold">2.4m FROM SOL</p>
+</div>
+<div class="size-10 rounded-full border border-white/20 p-0.5 overflow-hidden">
+<img alt="User Avatar" class="w-full h-full object-cover rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPk3okpq4XQm3m3toqupHMVT5cSUnQWfgBzfmneDsCggOofTbgvi95C5pUfJasGXrMn9Rb1JoZ7u-hKyUTve_H90qXiRGea21lD0kByaofRk71QUJZn_SEytRIOezndQ-A1PzAFHpKvj7O3Ml8XG7cJylAe656YQidDHp1DWGE3iRY93YPsPTRJ3Fatt85cCeWOmHyd1wtiucy_LsoiMJG8LPs-JvlghoDz0GU7Y7UBUZ3r1AxeRXx1uOKZlWyJE3Bv8SiIWPFkQ"/>
+</div>
+</div>
+
+</body></html>

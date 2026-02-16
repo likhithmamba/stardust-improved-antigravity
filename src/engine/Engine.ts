@@ -60,7 +60,7 @@ export class Engine {
         if (this.isRunning) return;
         this.isRunning = true;
         this.loop();
-        console.log('🌌 Stardust Engine Started');
+
     }
 
     public stop() {
@@ -80,7 +80,7 @@ export class Engine {
         if (!this.isRunning) return;
 
         // 1. Calculate Layout Targets
-        let targets = new Map<string, any>();
+        let targets = new Map<string, { x: number; y: number }>();
         if (FLAGS.ENABLE_LAYOUT) {
             targets = this.layoutManager.getTargets();
         }
@@ -103,7 +103,7 @@ export class Engine {
         // 1. Direct DOM Updates via Registry
         this.world.notes.forEach(note => {
             // We can check if scaling is needed, e.g. from Singularity
-            const scale = (note as any).tempScale || 1;
+            const scale = (note as any)?.tempScale || 1;
             visualRegistry.updatePosition(note.id, note.x, note.y, scale);
         });
 

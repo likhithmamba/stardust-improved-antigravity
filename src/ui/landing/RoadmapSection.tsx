@@ -10,7 +10,7 @@ export const RoadmapSection: React.FC = () => {
     ];
 
     return (
-        <section className="py-32 px-4 bg-black text-white relative overflow-hidden">
+        <section className="py-32 px-4 bg-black text-white relative overflow-hidden font-body">
             {/* Background Grid */}
             <div className="absolute inset-0 z-0 opacity-20"
                 style={{
@@ -26,15 +26,15 @@ export const RoadmapSection: React.FC = () => {
                     viewport={{ once: true }}
                     className="text-center mb-24"
                 >
-                    <h2 className="text-4xl md:text-5xl font-light text-white mb-4 tracking-tight">
+                    <h2 className="font-display text-4xl md:text-6xl font-semibold text-white mb-4 tracking-tight">
                         Mission Trajectory
                     </h2>
                     <p className="text-slate-500 font-mono tracking-widest text-xs uppercase">The expansion plan</p>
                 </motion.div>
 
                 <div className="relative">
-                    {/* Central Trajectory Line */}
-                    <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-purple-500/50 to-transparent -translate-x-1/2 hidden md:block" />
+                    {/* Central Trajectory Line (Glowing Beam) */}
+                    <div className="absolute left-[20px] md:left-1/2 top-0 bottom-0 w-[2px] bg-gradient-to-b from-purple-500/0 via-purple-500/50 to-purple-500/0 -translate-x-1/2" />
 
                     <div className="flex flex-col gap-12 md:gap-24 relative">
                         {roadmapItems.map((item, index) => (
@@ -44,33 +44,32 @@ export const RoadmapSection: React.FC = () => {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: index * 0.1 }}
-                                className={`flex flex-col md:flex-row items-center gap-8 md:gap-16 ${index % 2 === 0 ? 'md:flex-row-reverse' : ''}`}
+                                className={`flex flex-col md:flex-row items-start md:items-center gap-8 md:gap-16 ${index % 2 === 0 ? 'md:flex-row-reverse' : ''}`}
                             >
                                 {/* Content Card */}
-                                <div className="flex-1 w-full relative group">
-                                    <div className={`p-8 rounded-2xl border border-white/10 bg-slate-900/50 backdrop-blur-sm relative overflow-hidden transition-all duration-300 hover:border-purple-500/30 ${item.status === 'active' ? 'shadow-[0_0_30px_rgba(168,85,247,0.1)] border-purple-500/30' : ''}`}>
+                                <div className="flex-1 w-full relative group pl-12 md:pl-0">
+                                    <div className={`glass-panel p-8 rounded-2xl relative overflow-hidden transition-all duration-500 group-hover:-translate-y-1 ${item.status === 'active' ? 'border-purple-500/50 shadow-[0_0_40px_rgba(168,85,247,0.15)]' : 'border-white/5'}`}>
 
-                                        {/* Status Indicator */}
-                                        <div className="absolute top-0 right-0 p-4">
-                                            {item.status === 'complete' && <div className="text-green-500">✓</div>}
-                                            {item.status === 'active' && <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />}
+                                        {/* Status Pill */}
+                                        <div className="absolute top-6 right-6">
+                                            {item.status === 'complete' && <div className="text-green-400 font-mono text-xs border border-green-500/30 px-2 py-1 rounded bg-green-500/10">COMPLETE</div>}
+                                            {item.status === 'active' && <div className="text-purple-400 font-mono text-xs border border-purple-500/30 px-2 py-1 rounded bg-purple-500/10 animate-pulse">IN PROGRESS</div>}
+                                            {item.status === 'upcoming' && <div className="text-slate-500 font-mono text-xs border border-slate-700 px-2 py-1 rounded">UPCOMING</div>}
                                         </div>
 
                                         <div className="text-xs text-purple-400 font-mono font-bold tracking-widest uppercase mb-4">{item.quarter}</div>
-                                        <h3 className="text-2xl font-bold mb-3 text-white">{item.title}</h3>
+                                        <h3 className="font-display text-3xl font-bold mb-3 text-white">{item.title}</h3>
                                         <p className="text-slate-400 text-sm leading-relaxed">{item.desc}</p>
 
                                         {/* Hover Glow */}
-                                        <div className="absolute inset-0 bg-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                                     </div>
                                 </div>
 
-                                {/* Center Node */}
-                                <div className="w-4 h-4 rounded-full bg-black border-2 border-white/20 z-10 relative hidden md:block">
-                                    {item.status === 'active' && (
-                                        <div className="absolute inset-0 bg-purple-500 rounded-full animate-ping opacity-75" />
-                                    )}
-                                    <div className={`absolute inset-0 rounded-full ${item.status === 'active' ? 'bg-purple-500' : 'bg-slate-700'}`} />
+                                {/* Center Node (Star) */}
+                                <div className="absolute left-[20px] md:left-1/2 -translate-x-1/2 w-10 h-10 flex items-center justify-center z-10">
+                                    <div className={`w-4 h-4 rounded-full border-2 transition-all duration-500 ${item.status === 'active' ? 'bg-purple-500 border-white shadow-[0_0_20px_purple]' : 'bg-black border-slate-700'}`} />
+                                    {item.status === 'active' && <div className="absolute inset-0 rounded-full border border-purple-500 animate-ping opacity-50" />}
                                 </div>
 
                                 {/* Empty space for alternating layout */}

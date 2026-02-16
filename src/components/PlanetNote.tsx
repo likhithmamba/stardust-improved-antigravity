@@ -28,7 +28,7 @@ interface PlanetNoteProps {
 
 const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
     note, isSelected, zoom, isReadOnly, visualColor, layoutOrigin, viewMode,
-    onConnectStart, onDragStart, onDrag, onDragEnd, onContextMenu, onClickOverride, onPointerUp
+    onConnectStart, onDragStart, onDrag, onDragEnd, onClickOverride, onPointerUp
 }) => {
     const updateNote = useStore((state) => state.updateNote);
     const setSelectedId = useStore((state) => state.setSelectedId);
@@ -43,9 +43,8 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
     const isFocused = focusModeId === note.id;
     const isDimmed = focusModeId && !isFocused;
 
-    // USER REQUEST: Force 'Uranus' style in all structured modes
-    const isStructuredMode = viewMode !== 'free' && viewMode !== 'void';
-    const effectiveType = isStructuredMode ? NoteType.Uranus : note.type;
+    // Unified Type: Always use the node's actual type
+    const effectiveType = note.type;
     const baseStyle = NOTE_STYLES[effectiveType] || NOTE_STYLES[NoteType.Asteroid];
 
     // Allow mutating style for local needs or clone it
@@ -103,8 +102,7 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
         ? (REAL_SIZES[note.type] || 64)
         : style.width;
 
-    // Apply Pro/Ultra Mode Sizes overrides
-    if (isEnhanced && !isStructuredMode) {
+    if (isEnhanced && viewMode === 'free') {
         if (note.type === NoteType.Nebula) size = 1600;
         else if (note.type === NoteType.Galaxy) size = 1200;
         else if (note.type === NoteType.Sun) size = 800;
@@ -115,10 +113,8 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
         else if (note.type === NoteType.Asteroid || note.type === NoteType.Comet) size = 180;
     }
 
-    // Override size for Uranus in structured modes (Uniform Size)
-    if (isStructuredMode) {
-        size = 150;
-    }
+    // Unified Size: Allow mass-based sizing in all modes
+    // if (isStructuredMode) { size = 150; } // REMOVED: User wants "Mass = Size" in Orbital as well
 
     const bind = useGesture({
         onDragStart: ({ event }) => {
@@ -309,7 +305,7 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
                     "note-planet",
                     `planet-${effectiveType}`,
                     style.className,
-                    isEnhanced && !isStructuredMode && `planet-${effectiveType}-pro`,
+                    isEnhanced && viewMode === 'free' && `planet-${effectiveType}-pro`,
                     isReadOnly && "pointer-events-none cursor-default"
                 )}
                 style={{
@@ -341,8 +337,8 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
                     opacity: { duration: 0.3 }
                 }}
             >
-                {/* ENHANCED VISUALS (Pro/Ultra Mode) - ONLY IN FREE MODE */}
-                {isEnhanced && !isStructuredMode && (
+                {/* UNIFIED RENDERER: Always use Premium Glassmorphism */}
+                {isEnhanced && (
                     <div className="absolute inset-0 pointer-events-none overflow-visible">
                         <div className="absolute inset-[-10%] rounded-full opacity-60 mix-blend-screen"
                             style={{
@@ -369,79 +365,42 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
                         )}
                     </div>
                 )}
-
-                {isSelected && (
-                    <motion.div
-                        layoutId="selection-ring"
-                        className="selection-ring z-0"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1, rotate: 360 }}
-                        transition={{
-                            opacity: { duration: 0.2 },
-                            scale: { duration: 0.2 },
-                            rotate: { duration: 20, repeat: Infinity, ease: "linear" }
-                        }}
-                    />
-                )}
-
                 <div
+                    ref={contentRef}
                     className={clsx(
-                        "note-content z-20 transition-all duration-300",
-                        "flex items-center justify-center text-center",
-                        "absolute inset-0 rounded-full p-1 overflow-hidden pointer-events-auto cursor-pointer outline-none border-none",
-                        isSelected && !isEditing && "text-white"
+                        "absolute inset-0 z-20 flex items-center justify-center text-center p-[15%]",
+                        "whitespace-pre-wrap break-words outline-none",
+                        isEditing ? "overflow-y-auto cursor-text" : "cursor-pointer overflow-hidden"
                     )}
                     style={{
                         fontSize: fontSize,
-                        fontFamily: note.fontFamily === 'serif' ? 'serif' : note.fontFamily === 'mono' ? 'monospace' : 'inherit',
-                        textShadow: note.color ? `0 0 10px ${note.color}` : undefined,
+                        color: note.textColor || 'white',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.5)'
                     }}
-                    onDoubleClick={handleContentClick}
-                    onContextMenu={(e) => {
-                        if (onContextMenu) {
+                    contentEditable={isEditing}
+                    suppressContentEditableWarning
+                    onBlur={handleBlur}
+                    onPointerDown={(e) => isEditing && e.stopPropagation()}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
-                            e.stopPropagation();
-                            onContextMenu(e, note.id);
+                            handleBlur();
                         }
                     }}
-                    onPointerDown={(e) => isEditing && e.stopPropagation()}
                 >
-                    {note.color && (
-                        <div
-                            className="absolute inset-0 rounded-full z-[-1] opacity-50 blur-xl transition-colors duration-500"
-                            style={{ backgroundColor: note.color }}
-                        />
-                    )}
-
-                    <div
-                        ref={contentRef}
-                        className={clsx(
-                            "w-full h-full p-[15%] outline-none border-none ring-0",
-                            "flex flex-col items-center justify-center",
-                            "text-center whitespace-pre-wrap break-all break-words",
-                            "rounded-full overflow-hidden no-scrollbar",
-                            isEditing && "overflow-y-auto cursor-text z-50",
-                            !isEditing && "cursor-pointer"
-                        )}
-                        style={{
-                            minHeight: '1em',
-                            caretColor: 'white',
-                            color: note.textColor || (isSelected && !isEditing ? 'white' : 'white')
-                        }}
-                        contentEditable={isEditing}
-                        suppressContentEditableWarning
-                        onBlur={handleBlur}
-                        onClick={(e) => e.stopPropagation()}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter' && !e.shiftKey) {
-                                e.preventDefault();
-                                handleBlur();
-                            }
-                        }}
-                    >
-                        {note.title || style.label}
-                    </div>
+                    {note.title || style.label}
                 </div>
+
+                {/* Shared Selection Ring */}
+                {isSelected && (
+                    <motion.div
+                        layoutId="selection-ring"
+                        className="selection-ring z-0 absolute inset-[-4px] rounded-full border-2 border-blue-400"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.2 }}
+                    />
+                )}
 
                 {renderHandle('top')}
                 {renderHandle('right')}

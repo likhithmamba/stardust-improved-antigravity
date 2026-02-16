@@ -1,23 +1,61 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { FloatingDebris } from './FloatingDebris';
+
+// --- Text Scramble Effect ---
+const scrambleText = (text: string, progress: number) => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+';
+    return text.split('').map((char, index) => {
+        if (progress * text.length > index) return char;
+        if (char === ' ') return ' ';
+        return chars[Math.floor(Math.random() * chars.length)];
+    }).join('');
+};
+
+const ScrambleTitle = ({ text, className }: { text: string, className?: string }) => {
+    const [display, setDisplay] = useState(text);
+    const [progress, setProgress] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setProgress(p => {
+                if (p >= 1) {
+                    clearInterval(interval);
+                    return 1;
+                }
+                return p + 0.01; // speed
+            });
+        }, 16);
+        return () => clearInterval(interval);
+    }, []);
+
+    useEffect(() => {
+        setDisplay(scrambleText(text, progress));
+    }, [progress, text]);
+
+    return <span className={className}>{display}</span>;
+};
+
 
 interface HeroSectionProps {
     onEnterApp?: () => void;
 }
 
-export const HeroSection: React.FC<HeroSectionProps> = () => {
+export const HeroSection: React.FC<HeroSectionProps> = ({ onEnterApp }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [animationStep, setAnimationStep] = useState<'initial' | 'bang' | 'settle'>('initial');
+    const containerRef = useRef<HTMLDivElement>(null);
+    const { scrollY } = useScroll();
 
-    // Sequence the Big Bang
-    useEffect(() => {
-        const timer1 = setTimeout(() => setAnimationStep('bang'), 500); // Wait a beat before bang
-        const timer2 = setTimeout(() => setAnimationStep('settle'), 800); // 300ms flash duration
+    // Parallax effects
+    const y1 = useTransform(scrollY, [0, 500], [0, 200]);
+    const opacity = useTransform(scrollY, [0, 300], [1, 0]);
 
-        return () => { clearTimeout(timer1); clearTimeout(timer2); };
-    }, []);
+    // Mouse position for magnetic effect
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+    const buttonRef = useRef<HTMLButtonElement>(null);
+    const [isHoveringBtn, setIsHoveringBtn] = useState(false);
 
-    // Warp Speed Particle System
+    // Advanced Starfield (Preserved)
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -27,74 +65,65 @@ export const HeroSection: React.FC<HeroSectionProps> = () => {
         let width = canvas.width = window.innerWidth;
         let height = canvas.height = window.innerHeight;
 
-        const particles: { x: number, y: number, z: number, px: number, py: number }[] = [];
-        const particleCount = 2000; // Dense starfield
-        const centerX = width / 2;
-        const centerY = height / 2;
+        const stars: { x: number, y: number, z: number, o: number, size: number }[] = [];
+        const starCount = 3000;
 
-        for (let i = 0; i < particleCount; i++) {
-            particles.push({
+        for (let i = 0; i < starCount; i++) {
+            stars.push({
                 x: (Math.random() - 0.5) * width * 2,
                 y: (Math.random() - 0.5) * height * 2,
                 z: Math.random() * width,
-                px: 0,
-                py: 0
+                o: Math.random(),
+                size: Math.random() * 2 // varied sizes
             });
         }
 
-        let afId: number;
+        let animationFrameId: number;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        let time = 0;
 
-        const animate = () => {
-            // Trail effect
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.4)'; // Longer trails
+        const render = () => {
+            time += 0.005;
+            ctx.fillStyle = '#050505';
             ctx.fillRect(0, 0, width, height);
 
-            ctx.fillStyle = 'white';
+            const cx = width / 2;
+            const cy = height / 2;
 
-            // Speed depends on animation state
-            let speed = 20;
-            if (animationStep === 'initial') speed = 0;
-            if (animationStep === 'bang') speed = 100; // Hyperdrive burst
-
-            for (let i = 0; i < particleCount; i++) {
-                const p = particles[i];
-
-                // Move star closer
-                p.z -= speed;
-
-                // Reset if passed screen
-                if (p.z <= 0) {
-                    p.z = width;
-                    p.x = (Math.random() - 0.5) * width * 2;
-                    p.y = (Math.random() - 0.5) * height * 2;
-                    p.px = (p.x / p.z) * 100 + centerX;
-                    p.py = (p.y / p.z) * 100 + centerY;
+            stars.forEach(star => {
+                // Move stars towards viewer
+                star.z -= 2;
+                if (star.z <= 0) {
+                    star.z = width;
+                    star.x = (Math.random() - 0.5) * width * 2;
+                    star.y = (Math.random() - 0.5) * height * 2;
                 }
 
-                // Project 3D to 2D
-                const sx = (p.x / p.z) * 100 + centerX;
-                const sy = (p.y / p.z) * 100 + centerY;
+                const x = (star.x / star.z) * width + cx;
+                const y = (star.y / star.z) * height + cy;
+                const size = (1 - star.z / width) * star.size * 2;
+                const alpha = (1 - star.z / width);
 
-                // Draw line from previous position (streak)
-                const size = (1 - p.z / width) * 2.5; // Bigger as they get closer
-
-                if (p.px !== 0) {
+                if (x > 0 && x < width && y > 0 && y < height) {
                     ctx.beginPath();
-                    ctx.moveTo(p.px, p.py);
-                    ctx.lineTo(sx, sy);
-                    ctx.strokeStyle = `rgba(255, 255, 255, ${1 - p.z / width})`;
-                    ctx.lineWidth = size;
-                    ctx.stroke();
+                    ctx.fillStyle = `rgba(200, 220, 255, ${alpha})`;
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
                 }
+            });
 
-                p.px = sx;
-                p.py = sy;
-            }
+            // Draw nebulas/gradients
+            const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, width * 0.8);
+            gradient.addColorStop(0, 'rgba(99, 102, 241, 0.03)'); // Indigo center
+            gradient.addColorStop(0.5, 'rgba(168, 85, 247, 0.01)'); // Purple mid
+            gradient.addColorStop(1, 'transparent');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, width, height);
 
-            afId = requestAnimationFrame(animate);
+            animationFrameId = requestAnimationFrame(render);
         };
 
-        animate();
+        render();
 
         const handleResize = () => {
             width = canvas.width = window.innerWidth;
@@ -103,116 +132,123 @@ export const HeroSection: React.FC<HeroSectionProps> = () => {
 
         window.addEventListener('resize', handleResize);
         return () => {
-            cancelAnimationFrame(afId);
+            cancelAnimationFrame(animationFrameId);
             window.removeEventListener('resize', handleResize);
         };
-    }, [animationStep]);
+    }, []);
 
-    // Text Reveal Variant (Blur to Focus)
-    const textVariant = {
-        hidden: { opacity: 0, y: 30, filter: "blur(20px)" },
-        visible: (i: number) => ({
-            opacity: 1,
-            y: 0,
-            filter: "blur(0px)",
-            textShadow: "0 0 30px rgba(255,255,255,0.2)",
-            transition: {
-                delay: i * 0.2 + 1, // Start after settle
-                duration: 1.5,
-                ease: [0.16, 1, 0.3, 1] as any // Exposure ease
-            }
-        })
+    // Magnetic Button Logic
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!buttonRef.current) return;
+        const rect = buttonRef.current.getBoundingClientRect();
+        const x = e.clientX - (rect.left + rect.width / 2);
+        const y = e.clientY - (rect.top + rect.height / 2);
+
+        // Only magnetize if close
+        if (Math.abs(x) < 100 && Math.abs(y) < 100) {
+            setMousePosition({ x: x * 0.2, y: y * 0.2 });
+        } else {
+            setMousePosition({ x: 0, y: 0 });
+        }
+    };
+
+    const handleMouseLeave = () => {
+        setMousePosition({ x: 0, y: 0 });
+        setIsHoveringBtn(false);
     };
 
     return (
-        <section className="relative w-full h-screen flex flex-col justify-center items-center overflow-hidden bg-black select-none">
-            {/* Big Bang Flash Overlay */}
-            <AnimatePresence>
-                {animationStep === 'bang' && (
+        <section ref={containerRef} className="relative w-full h-screen overflow-hidden flex flex-col items-center justify-center">
+
+            {/* Background Canvas */}
+            <canvas ref={canvasRef} className="absolute inset-0 z-0" />
+
+            {/* NEW: Floating Debris Layer */}
+            <FloatingDebris />
+
+            {/* Content Container */}
+            <motion.div
+                style={{ y: y1, opacity }}
+                className="relative z-10 flex flex-col items-center text-center px-6 max-w-5xl mx-auto"
+            >
+                {/* Badge */}
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.2 }}
+                    className="mb-8 px-4 py-1.5 rounded-full glass border border-purple-500/20 text-purple-300 text-xs font-medium tracking-widest uppercase"
+                >
+                    System V3.0 // Ready
+                </motion.div>
+
+                {/* Main Title - Split for impact */}
+                <h1 className="font-display text-6xl md:text-8xl lg:text-[9rem] leading-[0.9] font-bold tracking-tighter text-white mb-6 drop-shadow-2xl">
                     <motion.div
-                        className="absolute inset-0 bg-white z-[60] pointer-events-none"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: [0, 1, 0] }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                    />
-                )}
-            </AnimatePresence>
-
-            {/* Background Canvas for Warp Particles */}
-            <div className="absolute inset-0 z-0">
-                <canvas ref={canvasRef} className="w-full h-full block" />
-            </div>
-
-            {/* Vignette & Color Grade */}
-            <div className="absolute inset-0 z-[1] bg-radial-gradient from-transparent to-black opacity-80 pointer-events-none" />
-
-            {/* Central Content */}
-            {animationStep === 'settle' && (
-                <div className="relative z-10 text-center px-6 mix-blend-difference_ text-white flex flex-col items-center max-w-7xl mx-auto">
-
-                    <motion.div className="overflow-hidden p-2">
-                        <motion.h1
-                            custom={1}
-                            variants={textVariant}
-                            initial="hidden"
-                            animate="visible"
-                            className="text-6xl md:text-8xl lg:text-9xl font-semibold tracking-tighter text-white drop-shadow-2xl mb-2"
-                        >
-                            Ideas don’t start
-                        </motion.h1>
-                    </motion.div>
-
-                    <motion.div className="overflow-hidden p-2 mb-8">
-                        <motion.h1
-                            custom={2}
-                            variants={textVariant}
-                            initial="hidden"
-                            animate="visible"
-                            className="text-6xl md:text-8xl lg:text-9xl font-semibold tracking-tighter text-slate-500"
-                        >
-                            <span className="text-white italic">organized</span>.
-                        </motion.h1>
-                    </motion.div>
-
-                    <motion.div
-                        custom={3}
-                        variants={textVariant}
-                        initial="hidden"
-                        animate="visible"
-                        className="max-w-2xl mx-auto"
+                        initial={{ opacity: 0, rotateX: 20 }}
+                        animate={{ opacity: 1, rotateX: 0 }}
+                        transition={{ duration: 0.8 }}
+                        className="block bg-gradient-to-b from-white via-white to-slate-400 bg-clip-text text-transparent"
                     >
-                        <p className="text-xl md:text-2xl text-slate-400 font-light leading-relaxed tracking-wide">
-                            Stardust is the <strong className="text-purple-400 font-medium glow-text">Cosmic Canvas</strong> for your mind.
-                            Where thoughts behave like matter—attracting, orbiting, and evolving naturally.
-                        </p>
+                        <ScrambleTitle text="Think at" />
                     </motion.div>
-
-                    {/* Scroll Indicator */}
                     <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 0.5, y: [0, 10, 0] }}
-                        transition={{ delay: 3, duration: 2, repeat: Infinity }}
-                        className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-slate-500"
+                        initial={{ opacity: 0, rotateX: 20 }}
+                        animate={{ opacity: 1, rotateX: 0 }}
+                        transition={{ duration: 0.8, delay: 0.3 }}
+                        className="block text-gradient-cosmic pb-4" // Padding for descenders
                     >
-                        <span className="text-[10px] uppercase tracking-[0.3em] font-semibold">Begin Transmission</span>
-                        <div className="w-[1px] h-16 bg-gradient-to-b from-transparent via-purple-500 to-transparent"></div>
+                        <ScrambleTitle text="Light Speed." />
                     </motion.div>
-                </div>
-            )}
+                </h1>
 
-            {/* Initial Singularity Point */}
-            {animationStep === 'initial' && (
-                <div className="absolute z-40 inset-0 flex items-center justify-center">
+                <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1, delay: 0.8 }}
+                    className="text-lg md:text-2xl text-slate-400 font-light max-w-2xl leading-relaxed mb-12"
+                >
+                    The infinite canvas for high-velocity teams. <br className="hidden md:block" />
+                    Map ideas, orbit tasks, and collapse chaos into clarity.
+                </motion.p>
+
+                {/* Magnetic CTA Button */}
+                <div
+                    className="relative group"
+                    onMouseMove={handleMouseMove}
+                    onMouseLeave={handleMouseLeave}
+                    onMouseEnter={() => setIsHoveringBtn(true)}
+                >
+                    <motion.button
+                        ref={buttonRef}
+                        onClick={onEnterApp}
+                        animate={{ x: mousePosition.x, y: mousePosition.y }}
+                        transition={{ type: "spring", stiffness: 150, damping: 15 }}
+                        className="relative z-20 px-10 py-5 bg-white text-black font-display font-bold text-xl rounded-full hover:scale-105 transition-all duration-300 cursor-pointer overflow-hidden group-hover:shadow-[0_0_40px_rgba(255,255,255,0.4)]"
+                    >
+                        <span className="relative z-10 flex items-center gap-2">
+                            <ScrambleTitle text="Enter Stardust" className="inline-block min-w-[140px]" />
+                            <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                        </span>
+                    </motion.button>
+
+                    {/* Glow behind button */}
                     <motion.div
-                        className="w-1 h-1 bg-white rounded-full shadow-[0_0_100px_50px_rgba(255,255,255,1)]"
-                        initial={{ scale: 1 }}
-                        animate={{ scale: [1, 0.2, 500] }} // Implode then explode
-                        transition={{ duration: 0.8, times: [0, 0.7, 1], ease: "anticipate" }}
+                        animate={{ x: mousePosition.x * 0.5, y: mousePosition.y * 0.5, opacity: isHoveringBtn ? 0.6 : 0.2 }}
+                        className="absolute inset-0 bg-purple-500 blur-[40px] rounded-full z-10 transition-opacity duration-500 scale-150"
                     />
                 </div>
-            )}
+
+            </motion.div>
+
+            {/* Scroll Indicator */}
+            <motion.div
+                style={{ opacity }}
+                className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+            >
+                <span className="text-[10px] text-slate-500 uppercase tracking-[0.2em]">Explore</span>
+                <div className="w-[1px] h-12 bg-gradient-to-b from-slate-800 to-slate-200/20"></div>
+            </motion.div>
+
         </section>
     );
 };
-

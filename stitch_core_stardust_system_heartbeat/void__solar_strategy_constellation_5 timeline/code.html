@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CHRONOS: High-Density Analytics Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&amp;family=Inter:wght@400;600;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#00f2ff",
+                        "electric-blue": "#00d4ff",
+                        "matrix-green": "#00ff9d",
+                        "background-dark": "#05070a",
+                        "surface-dark": "#0d1117",
+                        "danger-red": "#ff4d4d",
+                    },
+                    fontFamily: {
+                        mono: ["Fira Code", "monospace"],
+                        sans: ["Inter", "sans-serif"],
+                    },
+                },
+            },
+        };
+    </script>
+<style type="text/tailwindcss">
+        :root {
+            --glow-cyan: rgba(0, 242, 255, 0.3);
+            --glow-green: rgba(0, 255, 157, 0.2);
+        }
+        .time-axis-main {
+            background: linear-gradient(90deg, transparent 0%, #00f2ff 50%, transparent 100%);
+            box-shadow: 0 0 15px var(--glow-cyan);
+        }
+        .data-stream-lane {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.01) 50%, transparent);
+        }
+        .glass-panel {
+            background: rgba(13, 17, 23, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .metric-card {
+            border-left: 2px solid theme('colors.electric-blue');
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .grid-bg {
+            background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.02) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+        .scanning-line {
+            background: linear-gradient(to right, transparent, theme('colors.danger-red'), transparent);
+            box-shadow: 0 0 10px theme('colors.danger-red');
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-slate-300 font-sans overflow-hidden h-screen w-screen select-none grid-bg">
+<header class="absolute top-0 left-0 right-0 h-16 glass-panel z-50 flex items-center justify-between px-6 border-t-0">
+<div class="flex items-center space-x-6">
+<div class="flex flex-col">
+<span class="text-[10px] font-bold text-electric-blue tracking-[0.2em] uppercase">System Status</span>
+<span class="font-mono text-sm font-semibold text-matrix-green">STABLE // 0.042ms LATENCY</span>
+</div>
+<div class="h-8 w-[1px] bg-white/10"></div>
+<div class="flex flex-col">
+<span class="text-[10px] font-bold text-slate-500 tracking-[0.2em] uppercase">Active Nodes</span>
+<span class="font-mono text-sm font-semibold">4,812.00</span>
+</div>
+</div>
+<div class="flex items-center space-x-8">
+<div class="flex flex-col items-end">
+<span class="text-[10px] font-bold text-slate-500 tracking-[0.2em] uppercase">Temporal Hash</span>
+<span class="font-mono text-xs text-electric-blue">0x8F2A...4D21</span>
+</div>
+<button class="bg-white/5 hover:bg-white/10 p-2 rounded border border-white/10 transition-colors">
+<span class="material-symbols-outlined text-xl block">settings_input_component</span>
+</button>
+</div>
+</header>
+<aside class="absolute top-20 right-6 w-64 glass-panel rounded-lg overflow-hidden shadow-2xl z-40 border-white/5">
+<div class="p-3 border-b border-white/5 flex justify-between items-center">
+<span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Global Telemetry</span>
+<span class="animate-pulse w-2 h-2 rounded-full bg-matrix-green"></span>
+</div>
+<div class="p-4 space-y-3">
+<div class="relative w-full h-12 bg-black/40 rounded border border-white/5">
+<div class="absolute inset-y-0 left-1/3 w-1/4 bg-electric-blue/10 border-x border-electric-blue/30"></div>
+<div class="absolute top-0 bottom-0 left-1/2 w-0.5 bg-danger-red/60 z-10"></div>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div class="bg-white/5 p-2 rounded">
+<span class="block text-[8px] text-slate-500 uppercase">Delta-V</span>
+<span class="font-mono text-xs text-matrix-green">+14.22</span>
+</div>
+<div class="bg-white/5 p-2 rounded">
+<span class="block text-[8px] text-slate-500 uppercase">Sync-Rate</span>
+<span class="font-mono text-xs text-electric-blue">99.98%</span>
+</div>
+</div>
+</div>
+</aside>
+<main class="relative h-full w-full flex flex-col pt-16">
+<div class="flex-1 w-full relative flex items-center overflow-hidden data-stream-lane">
+<div class="absolute top-4 left-6 z-10">
+<span class="text-[10px] font-mono text-white/20 uppercase tracking-widest">Flux.Stream_Alpha</span>
+</div>
+<div class="flex items-center space-x-32 px-[50vw]">
+<div class="relative flex flex-col items-center group">
+<div class="mb-4 glass-panel p-3 rounded-md border-l-2 border-matrix-green min-w-[140px]">
+<span class="text-[9px] font-bold text-matrix-green block mb-1">EVENT_DETECTION</span>
+<span class="text-xs font-mono block">QUANTUM_LEAP_01</span>
+<div class="mt-2 text-[10px] font-mono text-slate-400 flex justify-between border-t border-white/5 pt-1">
+<span>VAL: 84.2</span>
+<span>±0.02</span>
+</div>
+</div>
+<div class="w-1.5 h-16 bg-gradient-to-t from-matrix-green/40 to-transparent"></div>
+</div>
+<div class="w-96 h-12 flex items-end space-x-1 opacity-40">
+<div class="w-1 bg-matrix-green h-[20%]"></div><div class="w-1 bg-matrix-green h-[40%]"></div><div class="w-1 bg-matrix-green h-[30%]"></div><div class="w-1 bg-matrix-green h-[60%]"></div><div class="w-1 bg-matrix-green h-[90%]"></div><div class="w-1 bg-matrix-green h-[75%]"></div><div class="w-1 bg-matrix-green h-[35%]"></div>
+</div>
+</div>
+</div>
+<div class="h-32 w-full relative flex items-center bg-black/40 border-y border-white/5">
+<div class="absolute top-1/2 left-0 w-[10000px] h-[2px] time-axis-main -translate-y-1/2"></div>
+<div class="relative flex items-center px-[50vw] h-full w-fit">
+<div class="absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
+<div class="flex items-center">
+<script>
+                        const tickContainer = document.currentScript.parentElement;
+                        for(let i=0; i<300; i++) {
+                            const tick = document.createElement('div');
+                            const isMajor = i % 10 === 0;
+                            const isMid = i % 5 === 0;
+                            const height = isMajor ? 'h-10' : isMid ? 'h-6' : 'h-3';
+                            const color = isMajor ? 'bg-electric-blue/60' : 'bg-slate-700';
+                            tick.className = `w-[1px] ${height} ${color} mx-6 relative`;
+                            if(isMajor) {
+                                const label = document.createElement('span');
+                                label.className = 'absolute -bottom-8 left-1/2 -translate-x-1/2 font-mono text-[9px] text-slate-500';
+                                label.innerText = `${1000 + i * 10}ms`;
+                                tick.appendChild(label);
+                            }
+                            tickContainer.appendChild(tick);
+                        }
+                    </script>
+</div>
+</div>
+<div class="absolute left-[800px] z-20">
+<div class="flex flex-col items-center">
+<div class="w-12 h-12 rounded-full border border-electric-blue flex items-center justify-center bg-black/60 shadow-[0_0_20px_rgba(0,212,255,0.4)]">
+<span class="material-symbols-outlined text-electric-blue">analytics</span>
+</div>
+<div class="mt-4 bg-electric-blue text-black px-2 py-0.5 rounded text-[10px] font-mono font-bold">FOCUS_NODE_88</div>
+</div>
+</div>
+<div class="absolute left-[1500px] z-30 pointer-events-none flex flex-col items-center">
+<div class="w-[2px] h-[200vh] absolute top-[-100vh] scanning-line"></div>
+<div class="z-40 bg-danger-red text-white text-[9px] px-2 py-1 rounded font-mono font-bold uppercase tracking-widest -mt-24 shadow-lg shadow-danger-red/20">LIVE_CURSOR</div>
+<div class="w-4 h-4 rounded-full border-2 border-danger-red bg-background-dark z-40 flex items-center justify-center">
+<div class="w-1 h-1 rounded-full bg-danger-red animate-ping"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex-1 w-full relative flex items-center overflow-hidden data-stream-lane border-b-0">
+<div class="absolute bottom-4 left-6 z-10">
+<span class="text-[10px] font-mono text-white/20 uppercase tracking-widest">Logs.Stream_Gamma</span>
+</div>
+<div class="flex items-center space-x-48 px-[50vw]">
+<div class="flex flex-col items-start glass-panel p-2 rounded-sm border-l-2 border-slate-700 min-w-[200px]">
+<div class="flex justify-between w-full mb-1">
+<span class="text-[8px] font-mono text-slate-500 uppercase">Timestamp: 21:04:11</span>
+<span class="text-[8px] font-mono text-electric-blue">ID: #C99</span>
+</div>
+<span class="text-[10px] font-mono text-slate-300">Packet inspection completed. No anomalies found in sub-sector 4.</span>
+</div>
+<div class="flex flex-col items-start glass-panel p-2 rounded-sm border-l-2 border-danger-red/50 min-w-[200px]">
+<div class="flex justify-between w-full mb-1">
+<span class="text-[8px] font-mono text-slate-500 uppercase">Timestamp: 21:04:45</span>
+<span class="text-[8px] font-mono text-danger-red">ID: #D02</span>
+</div>
+<span class="text-[10px] font-mono text-slate-300">WARNING: Buffer overflow detected in telemetry pipe.</span>
+</div>
+</div>
+</div>
+</main>
+<nav class="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center space-x-4">
+<div class="glass-panel px-4 py-2 rounded-lg flex items-center space-x-4 border-white/10 shadow-2xl">
+<button class="text-slate-500 hover:text-electric-blue transition-colors">
+<span class="material-symbols-outlined">first_page</span>
+</button>
+<button class="text-slate-300 hover:text-electric-blue">
+<span class="material-symbols-outlined">play_arrow</span>
+</button>
+<button class="text-slate-500 hover:text-electric-blue">
+<span class="material-symbols-outlined">last_page</span>
+</button>
+<div class="h-4 w-[1px] bg-white/10 mx-2"></div>
+<div class="flex flex-col">
+<span class="text-[8px] text-slate-500 uppercase font-bold">Playback Speed</span>
+<span class="text-xs font-mono text-electric-blue">0.25x (REALTIME)</span>
+</div>
+</div>
+<div class="glass-panel px-6 py-2 rounded-full flex items-center space-x-6 border-white/10 shadow-2xl">
+<button class="text-slate-400 hover:text-matrix-green transition-colors" title="Search Metrics">
+<span class="material-symbols-outlined text-xl">search</span>
+</button>
+<button class="text-slate-400 hover:text-matrix-green transition-colors" title="Add Metric Pin">
+<span class="material-symbols-outlined text-xl">add_chart</span>
+</button>
+<button class="text-electric-blue" title="Dashboard Mode">
+<span class="material-symbols-outlined text-xl fill-current">dashboard</span>
+</button>
+<button class="text-slate-400 hover:text-matrix-green transition-colors" title="Export CSV/JSON">
+<span class="material-symbols-outlined text-xl">database</span>
+</button>
+<button class="text-slate-400 hover:text-matrix-green transition-colors" title="System Logs">
+<span class="material-symbols-outlined text-xl">terminal</span>
+</button>
+</div>
+</nav>
+<div class="absolute bottom-6 right-6 group z-50">
+<div class="relative w-16 h-16 flex items-center justify-center">
+<div class="absolute inset-0 rounded-full border border-white/5 bg-black/40"></div>
+<div class="w-8 h-8 rounded-full bg-black shadow-[0_0_15px_rgba(0,0,0,1),inset_0_0_10px_rgba(255,255,255,0.1)] z-10"></div>
+<div class="absolute -top-10 right-0 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity bg-black/80 px-2 py-1 border border-white/10 rounded">
+<span class="text-[9px] font-mono text-slate-500">NULL_RECYCLER</span>
+</div>
+</div>
+</div>
+<div class="fixed top-0 left-0 w-full h-full bg-gradient-to-b from-blue-900/5 to-transparent pointer-events-none -z-10"></div>
+<div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] h-[90vh] bg-electric-blue/5 rounded-full blur-[180px] pointer-events-none -z-10"></div>
+
+</body></html>

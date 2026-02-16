@@ -344,7 +344,7 @@ export const useStore = create<State>((set, get) => ({
 }));
 
 // Debounce save
-let saveTimeout: any;
+let saveTimeout: ReturnType<typeof setTimeout> | undefined;
 const saveDataToDB = (notes: Note[], connections: Connection[]) => {
     clearTimeout(saveTimeout);
     saveTimeout = setTimeout(async () => {

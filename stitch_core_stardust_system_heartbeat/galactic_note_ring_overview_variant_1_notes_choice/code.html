@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VOID: Galactic Note Ring Overview</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<!-- Common Styles -->
+<link href="../common_components/common_styles.css" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3b82f6",
+              "background-light": "#f1f5f9",
+              "background-dark": "#020617",
+            },
+            fontFamily: {
+              display: ["Inter", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.75rem",
+            },
+            animation: {
+              'pulse-slow': 'pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'spin-slow': 'spin 120s linear infinite',
+            }
+          },
+        },
+      };
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+        .planet-ring {
+            position: relative;
+            width: 700px;
+            height: 700px;
+            border-radius: 50%;
+        }
+        .planet {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .glow-pink { filter: drop-shadow(0 0 15px rgba(244, 114, 182, 0.6)); }
+        .glow-blue { filter: drop-shadow(0 0 15px rgba(96, 165, 250, 0.6)); }
+        .glow-yellow { filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.6)); }
+        .glow-green { filter: drop-shadow(0 0 15px rgba(52, 211, 153, 0.6)); }
+        .black-hole-glow {
+            background: radial-gradient(circle, rgba(249, 115, 22, 0.4) 0%, rgba(234, 88, 12, 0.1) 50%, transparent 70%);
+            animation: pulse-slow 4s ease-in-out infinite;
+        }.ring-container {
+            transform: scale(0.9);
+        }
+        @media (min-width: 1440px) {
+            .ring-container { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200 transition-colors duration-500">
+<main class="relative w-screen h-screen flex items-center justify-center overflow-hidden">
+<div class="absolute inset-0 opacity-20 pointer-events-none dark:opacity-10" style="background-image: radial-gradient(#94a3b8 1px, transparent 1px); background-size: 40px 40px;"></div>
+<div class="absolute top-8 left-1/2 -translate-x-1/2 z-50">
+<button class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md p-3 rounded-full shadow-lg border border-white/20 hover:scale-105 transition-transform">
+<span class="material-icons-outlined block text-slate-500 dark:text-slate-400">search</span>
+</button>
+</div>
+<div class="absolute top-8 right-8 z-50">
+<div class="w-48 h-32 bg-slate-200/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-white/20 shadow-xl overflow-hidden relative">
+<div class="absolute inset-0 p-4 opacity-50">
+<div class="w-full h-full border border-primary/30 rounded-full flex items-center justify-center">
+<div class="w-1 h-1 bg-primary rounded-full"></div>
+</div>
+</div>
+<div class="absolute top-1/4 left-1/4 w-20 h-14 border border-yellow-400/80 rounded pointer-events-none"></div>
+<div class="absolute bottom-2 right-2 flex space-x-1">
+<div class="w-2 h-2 rounded-full bg-pink-400"></div>
+<div class="w-2 h-2 rounded-full bg-blue-400"></div>
+</div>
+</div>
+</div>
+<div class="ring-container relative">
+<div class="planet-ring border border-slate-200/50 dark:border-slate-800/50 flex items-center justify-center">
+<div class="text-center space-y-2 pointer-events-none">
+<h1 class="text-2xl font-light tracking-widest text-slate-400 dark:text-slate-500 uppercase">Void</h1>
+<p class="text-sm text-slate-300 dark:text-slate-600">The center of creation</p>
+</div>
+<div class="absolute inset-0" id="planetary-system">
+<div class="planet group cursor-pointer" style="transform: rotate(0deg) translate(350px) rotate(0deg);">
+<div class="w-16 h-16 bg-white dark:bg-slate-300 rounded-full glow-pink shadow-lg flex items-center justify-center transition-all group-hover:scale-110">
+<div class="hidden group-hover:block absolute -top-8 whitespace-nowrap bg-slate-900 text-white text-xs px-2 py-1 rounded">Project Alpha</div>
+</div>
+</div>
+<div class="planet group cursor-pointer" style="transform: rotate(30deg) translate(350px) rotate(-30deg);">
+<div class="w-10 h-10 bg-white dark:bg-slate-300 rounded-full glow-blue shadow-lg transition-all group-hover:scale-110"></div>
+</div>
+<div class="planet group cursor-pointer" style="transform: rotate(60deg) translate(350px) rotate(-60deg);">
+<div class="w-20 h-20 bg-white dark:bg-slate-300 rounded-full glow-yellow shadow-lg transition-all group-hover:scale-110"></div>
+</div>
+<div class="planet group cursor-pointer" style="transform: rotate(90deg) translate(350px) rotate(-90deg);">
+<div class="w-12 h-12 bg-white dark:bg-slate-300 rounded-full glow-green shadow-lg transition-all group-hover:scale-110"></div>
+</div>
+<div class="planet group cursor-pointer" style="transform: rotate(120deg) translate(350px) rotate(-120deg);">
+<div class="w-14 h-14 bg-white dark:bg-slate-300 rounded-full glow-pink shadow-lg transition-all group-hover:scale-110"></div>
+</div>
+<div class="planet group cursor-pointer" style="transform: rotate(150deg) translate(350px) rotate(-150deg);">
+<div class="w-10 h-10 bg-white dark:bg-slate-300 rounded-full glow-blue shadow-lg transition-all group-hover:scale-110"></div>
+</div>
+<div class="planet group cursor-pointer" style="transform: rotate(180deg) translate(350px) rotate(-180deg);">
+<div class="w-24 h-24 bg-white dark:bg-slate-300 rounded-full glow-yellow shadow-lg transition-all group-hover:scale-110"></div>
+</div>
+<div class="planet group cursor-pointer" style="transform: rotate(210deg) translate(350px) rotate(-210deg);">
+<div class="w-12 h-12 bg-white dark:bg-slate-300 rounded-full glow-green shadow-lg transition-all group-hover:scale-110"></div>
+</div>
+<div class="planet group cursor-pointer" style="transform: rotate(240deg) translate(350px) rotate(-240deg);">
+<div class="w-18 h-18 bg-white dark:bg-slate-300 rounded-full glow-pink shadow-lg transition-all group-hover:scale-110"></div>
+</div>
+<div class="planet group cursor-pointer" style="transform: rotate(270deg) translate(350px) rotate(-270deg);">
+<div class="w-11 h-11 bg-white dark:bg-slate-300 rounded-full glow-blue shadow-lg transition-all group-hover:scale-110"></div>
+</div>
+<div class="planet group cursor-pointer" style="transform: rotate(300deg) translate(350px) rotate(-300deg);">
+<div class="w-16 h-16 bg-white dark:bg-slate-300 rounded-full glow-yellow shadow-lg transition-all group-hover:scale-110"></div>
+</div>
+<div class="planet group cursor-pointer" style="transform: rotate(330deg) translate(350px) rotate(-330deg);">
+<div class="w-13 h-13 bg-white dark:bg-slate-300 rounded-full glow-green shadow-lg transition-all group-hover:scale-110"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="absolute bottom-12 right-12 z-40 group">
+<div class="relative w-32 h-32 flex items-center justify-center">
+<div class="absolute inset-0 black-hole-glow rounded-full scale-125"></div>
+<div class="relative w-16 h-16 bg-black rounded-full shadow-[0_0_40px_rgba(0,0,0,0.8)] border border-white/5 flex items-center justify-center transition-transform group-hover:scale-110">
+<span class="material-icons-outlined text-orange-500/50 text-xl">delete</span>
+</div>
+<div class="absolute inset-0 border-2 border-dashed border-orange-500/10 rounded-full animate-spin-slow"></div>
+</div>
+<div class="text-center mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="text-xs font-medium text-slate-400">Recycle Bin</span>
+</div>
+</div>
+<!-- Common Navigation Component -->
+<script src="../common_components/common_functions.js"></script>
+<script>
+// Add navigation to the page
+document.addEventListener('DOMContentLoaded', function() {
+  const navContainer = document.createElement('div');
+  navContainer.innerHTML = createNavigation();
+  document.body.appendChild(navContainer);
+
+  const modeToggleContainer = document.createElement('div');
+  modeToggleContainer.innerHTML = createModeToggle();
+  document.body.appendChild(modeToggleContainer);
+});
+</script>
+</main>
+<script>
+        // Simple logic to add some interactive floating effect to planets
+        document.addEventListener('mousemove', (e) => {
+            const amount = 5;
+            const x = (e.clientX - window.innerWidth / 2) / (window.innerWidth / 2) * amount;
+            const y = (e.clientY - window.innerHeight / 2) / (window.innerHeight / 2) * amount;
+            const ring = document.querySelector('.planet-ring');
+            ring.style.transform = `translate(${x}px, ${y}px)`;
+        });
+
+        // Initialize theme
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeTheme();
+        });
+    </script>
+
+</body></html>

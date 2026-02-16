@@ -1,35 +1,32 @@
-// import { PhysicsLoop } from '../systems/PhysicsLoop'; // REMOVED
-import { ViewConstraints } from '../systems/ViewConstraints';
-import clsx from 'clsx';
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGesture } from '@use-gesture/react';
 import { useStore } from '../store/useStore';
 import { useEngine } from '../hooks/useEngine';
-// import { InputController } from '../engine/input/InputController'; // REMOVED: Conflict
-import { Toolbar } from './Toolbar';
+
+import { ViewConstraints } from '../systems/ViewConstraints';
 import { MiniMap } from './MiniMap';
-import { SettingsPanel } from './SettingsPanel';
-import { soundManager } from '../utils/sound';
 import { PlanetNote } from './PlanetNote';
 import { ConnectionLayer } from './ConnectionLayer';
-import { CreationMenu } from './CreationMenu';
 import { BlackHole } from './BlackHole';
 import { NOTE_STYLES, NoteType, REAL_SIZES } from '../constants';
 import { HierarchyOverlay } from '../features/hierarchy/HierarchyOverlay';
 import { LinksOverlay } from '../features/links/LinksOverlay';
 import { SearchTeleport } from './SearchTeleport';
-import { SphericalChooser } from '../ui/spherical-chooser/SphericalChooser';
-import { QuestOverlay } from '../ui/quest-mode/QuestOverlay';
-import { InvoiceOverlay } from '../ui/invoice-universe/InvoiceOverlay';
 import { ToastOverlay } from '../ui/feedback/ToastOverlay';
 import { CanvasInputHandler } from '../ui/canvas/CanvasInputHandler';
 import { useSettingsStore } from '../ui/settings/settingsStore';
 import { SemanticZoomController } from './SemanticZoomController';
-// import { calculateTargets } from '../systems/LayoutEngine';
-// import { SmartLink } from './SmartLink';
 import { LayoutVisuals } from './LayoutVisuals';
 import { StarfieldLayer } from './StarfieldLayer';
+import { soundManager } from '../utils/sound';
+
+// Mode Overlays
+
+import { DecayOverlay } from './modes/DecayView';
+import { NotesChoiceRing } from './NotesChoiceRing';
+import { DashboardOverlay } from './DashboardOverlay';
+import { DashboardBackground } from './DashboardBackground';
 
 export const CanvasViewport: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -46,48 +43,32 @@ export const CanvasViewport: React.FC = () => {
     const selectedId = useStore((state) => state.selectedId);
     const setSelectedId = useStore((state) => state.setSelectedId);
 
-    // Migrated: UI Toggles & Modes from SettingsStore (The single source of truth)
+    // Migrated: UI Toggles & Modes from SettingsStore
     const mode = useSettingsStore((state) => state.mode);
     const viewMode = useSettingsStore((state) => state.viewMode);
-    // const theme = useStore((state) => state.theme); // Visuals still in core store? Or moved? Let's assume core for now as settings panel might not have fully moved theme.
-    // Actually, checked SettingsPanel, it uses useStore for Theme. So keep Theme here.
 
     // ENGINE INTEGRATION
     const engine = useEngine();
-    // const inputControllerRef = useRef<InputController | null>(null); // REMOVED: Conflict
-    // Note: InputController is currently blocked by PlanetNote's own gesture handlers.
-    // We keep it for future background interaction or unified input handling.
 
     // Derived Modes
     const proMode = mode === 'pro' || mode === 'ultra';
 
-    // --- HYBRID VIEW ARCHITECTURE ---
-
-    // Orbital Animation State
-    // Layout Origin State (Captures camera position when entering a mode)
+    // Layout Origin State
     const [layoutOrigin, setLayoutOrigin] = useState({ x: 0, y: 0 });
-
 
     // Origin Capture for Structured Modes
     useEffect(() => {
         if (viewMode !== 'free' && viewMode !== 'void') {
-            // Calculate World Coordinates of the center of the screen
             const centerX = (-viewport.x + window.innerWidth / 2) / viewport.zoom;
             const centerY = (-viewport.y + window.innerHeight / 2) / viewport.zoom;
             setLayoutOrigin({ x: centerX, y: centerY });
         }
-    }, [viewMode]); // Intentionally exclude viewport to capture snapshot only on mode change
-
-
-
+    }, [viewMode]);
 
     // Toggles
     const showHierarchy = useSettingsStore((state) => state.showHierarchy);
-
     const showLinks = useSettingsStore((state) => state.showLinks);
-    // Legacy visual props still in useStore for now if not in SettingsStore layout
     const showMinimap = useStore((state) => state.showMinimap);
-    // const setShowMinimap = useStore((state) => state.setShowMinimap);
     const scaleMode = useStore((state) => state.scaleMode);
 
     // Interaction State
@@ -104,14 +85,7 @@ export const CanvasViewport: React.FC = () => {
     const [linkingFromId, setLinkingFromId] = useState<string | null>(null);
     const [alignmentLines, setAlignmentLines] = useState<{ x?: number; y?: number } | null>(null);
 
-    // Starfield moved to StarfieldLayer
-    // const stars = ...
-    // const nebulas = ...
-    // const particleSystem = ...
-
-    // Starfield initialization moved to StarfieldLayer
-
-    // Event Listener for CanvasInputHandler (Robust Input)
+    // Event Listener for CanvasInputHandler
     useEffect(() => {
         const handleOpenRadial = (e: any) => {
             const { screenX, screenY } = e.detail;
@@ -137,20 +111,11 @@ export const CanvasViewport: React.FC = () => {
                 const worldX = (x - rect.left - viewport.x) / viewport.zoom;
                 const worldY = (y - rect.top - viewport.y) / viewport.zoom;
 
-                // EFFICIENCY UPGRADE: Instant Create in Structured Modes
                 if (viewMode !== 'free' && viewMode !== 'void') {
-                    // Bypass menu, auto-create "Standard" note (Earth/Task)
-                    // We need to set a temporary 'creationMenu' state so handleCreateNote can use it, 
-                    // OR refactor handleCreateNote to accept coords.
-                    // Refactoring handleCreateNote is cleaner but large change.
-                    // Hack: Set state then trigger? No, state is async.
-
-                    // Direct Call Logic
+                    // Direct Call Logic for structured modes
                     const spawnX = worldX;
                     const spawnY = worldY;
 
-                    // Quick Context Logic Inline (Critical for speed)
-                    // Use centralized engine to ensure creation matches drag logic perfectly
                     const constraint = ViewConstraints.applyConstraints(
                         viewMode || 'free',
                         spawnX,
@@ -170,17 +135,16 @@ export const CanvasViewport: React.FC = () => {
                         y: finalY,
                         w: 0,
                         h: 0,
-                        type: NoteType.Earth, // Default to Earth/Task
+                        type: NoteType.Earth,
                         title: '',
                         tags: finalTags,
                         priority: finalPriority,
                         originMode: constraint.dataUpdates?.originMode || 'free'
                     });
                     soundManager.playClick();
-                    return; // Skip menu
+                    return;
                 }
 
-                // Default Free Mode Behavior
                 setSphericalMenu({
                     isOpen: true,
                     x: x - rect.left,
@@ -207,10 +171,9 @@ export const CanvasViewport: React.FC = () => {
     useEffect(() => {
         if (!containerRef.current) return;
         const observer = new ResizeObserver((entries) => {
-            for (const entry of entries) { // Should only be one
+            for (const entry of entries) {
                 const { width, height } = entry.contentRect;
                 sizeRef.current = { width, height };
-                // Force canvas update if needed
                 if (canvasRef.current) {
                     const dpr = window.devicePixelRatio || 1;
                     canvasRef.current.width = width * dpr;
@@ -219,33 +182,9 @@ export const CanvasViewport: React.FC = () => {
             }
         });
         observer.observe(containerRef.current);
-
-        // Initialize InputController
-        // We use a local instance or modify Engine to have one?
-        // Let's use a local instance for now as it needs container ref
-        // CONFLICT FIX: InputController fights with PlanetNote useGesture/React events.
-        // Disabling it for now as React handles all necessary inputs (Drag, Pan, Zoom).
-        /*
-        if (!inputControllerRef.current) {
-            inputControllerRef.current = new InputController(engine.getWorld());
-            inputControllerRef.current.attach(containerRef.current!);
-        }
-        */
-
-        return () => {
-            observer.disconnect();
-            /*
-            if (inputControllerRef.current) {
-                inputControllerRef.current.detach();
-                inputControllerRef.current = null;
-            }
-            */
-        };
+        return () => observer.disconnect();
     }, [engine]);
 
-    // Background Rendering moved to StarfieldLayer
-
-    // Close context menu on click elsewhere
     useEffect(() => {
         const handleClick = () => {
             setContextMenu(null);
@@ -254,14 +193,10 @@ export const CanvasViewport: React.FC = () => {
         return () => window.removeEventListener('click', handleClick);
     }, []);
 
-    // Gestures for Viewport
     useGesture({
         onDrag: ({ delta: [dx, dy], event }) => {
-            // Check if we are interacting with canvas/background
             const target = event.target as HTMLElement;
 
-            // PRIORITY 1: Handle Connection Dragging
-            // If we are in "linking mode", update the line and DO NOT pan
             if (connectionStart) {
                 const rect = containerRef.current?.getBoundingClientRect();
                 if (rect) {
@@ -274,8 +209,6 @@ export const CanvasViewport: React.FC = () => {
                 return;
             }
 
-            // PRIORITY 2: Prevent Panning if dragging a note or handle
-            // If dragging a note, don't pan
             if (target.closest('.note-planet') || target.closest('.handle-base')) return;
 
             setViewport({ ...viewport, x: viewport.x + dx, y: viewport.y + dy });
@@ -291,32 +224,21 @@ export const CanvasViewport: React.FC = () => {
         },
         onPointerDown: ({ event }) => {
             const target = event.target as HTMLElement;
-            if (target.closest('.note-planet')) {
-                // Notes handle their own selection
-                return;
-            }
-
-            setSelectedId(undefined); // Deselect if clicking background
+            if (target.closest('.note-planet')) return;
+            setSelectedId(undefined);
         },
         onPointerUp: ({ event }) => {
             if (connectionStart) {
-                // Handle drop via global handler (math-based) since pointer capture might be on container
                 checkConnectionDrop(event);
             }
         }
     }, {
         target: containerRef,
         eventOptions: { passive: false },
-        drag: { filterTaps: true, threshold: 5 } // Threshold logic handled in PlanetNote, but good here too
+        drag: { filterTaps: true, threshold: 5 }
     });
 
-
-
-    // InputController Logic (Redundant? Maybe, but safe)
-    // ...
-
     const handleNoteDragStart = useCallback((id: string) => {
-        // FAST LOCK: Stop physics immediately
         const worldNote = engine.getWorld().notes.get(id);
         if (worldNote) {
             worldNote.fixed = true;
@@ -326,8 +248,6 @@ export const CanvasViewport: React.FC = () => {
     }, [engine]);
 
     const handleNoteDrag = useCallback((id: string, x: number, y: number) => {
-        // FAST PATH: Update Engine World directly so physics/links react instantly
-        // This is critical because React State is too slow for 60fps drag-linking
         const worldNote = engine.getWorld().notes.get(id);
         if (worldNote) {
             worldNote.x = x;
@@ -347,45 +267,15 @@ export const CanvasViewport: React.FC = () => {
         }
     }, [engine, viewport.zoom, viewport.x, viewport.y]);
 
-    // 3. APPLY LAYOUT TO PHYSICS WORLD (One-Time Move when Mode/LayoutOrigin changes)
-    // This allows them to settle into their new homes but remain movable.
-    // DEPRECATED: Engine Handles this now.
-    /*
-    useEffect(() => {
-        if (viewMode === 'free') return; // Don't touch physics in Free mode
-
-        // Get fresh targets with current config
-        // NOTE: We use the *calculated* layoutOrigin from previous effect, so this runs after it updates.
-        const targets = calculateTargets(viewMode, notes, { width: window.innerWidth, height: window.innerHeight }, {
-            orbital: { center: layoutOrigin, rotationOffset: 0, minDimension: Math.min(window.innerWidth, window.innerHeight) },
-            viewport: { ...viewport, width: window.innerWidth, height: window.innerHeight }
-        });
-
-        // Batch Update Position
-        targets.forEach((pos, id) => {
-            updateNote(id, { x: pos.x, y: pos.y });
-        });
-
-    }, [viewMode, layoutOrigin]); // When mode or origin changes, Snap them.
-    */
-
-
     const handleNoteDragEnd = (id: string, _x?: number, _y?: number) => {
-        setAlignmentLines(null); // Clear lines
-
-        // 1. Black Hole Check
+        setAlignmentLines(null);
         if (blackHoleActive) {
             soundManager.playWarp();
             deleteNote(id);
             setBlackHoleActive(false);
             return;
         }
-
-        // 2. Timeline Passive Snap - HANDLED BY VIEWCONSTRAINTS IN PLANETNOTE
-        // Redundant logic removed to prevent conflicts.
-        // The effective position is already committed by PlanetNote.onDragEnd before calling this.
     };
-
 
     const checkConnectionDrop = (e: any, explicitTargetId?: string) => {
         if (!connectionStart) return;
@@ -395,7 +285,6 @@ export const CanvasViewport: React.FC = () => {
         if (explicitTargetId) {
             hitNote = notes.find(n => n.id === explicitTargetId);
         } else {
-            // Fallback to math-based detection (dragging to empty space near planet)
             const rect = containerRef.current?.getBoundingClientRect();
             if (!rect) return;
             const worldX = (e.clientX - rect.left - viewport.x) / viewport.zoom;
@@ -418,7 +307,7 @@ export const CanvasViewport: React.FC = () => {
                 const dist = Math.sqrt(Math.pow(worldX - centerX, 2) + Math.pow(worldY - centerY, 2));
 
                 if (n.id === connectionStart.id) return false;
-                return dist <= (width / 2) + 200; // Snap distance
+                return dist <= (width / 2) + 200;
             });
         }
 
@@ -464,10 +353,6 @@ export const CanvasViewport: React.FC = () => {
         }
     };
 
-    // --- COMPARTMENTALIZATION (Filtering) ---
-    // Filter notes based on the current View Mode.
-    // 'Free' mode sees 'free' notes + legacy (undefined).
-    // Structured modes only see their own notes.
     const visibleNotes = notes.filter(n => {
         if (viewMode === 'free') {
             return n.originMode === 'free' || n.originMode === undefined;
@@ -476,8 +361,7 @@ export const CanvasViewport: React.FC = () => {
     });
 
     const handleCreateNote = (type: NoteType) => {
-        if (creationMenu || sphericalMenu) { // Support both menus or direct calls
-            // Use spherical menu coords if available (priority), else creation menu
+        if (creationMenu || sphericalMenu) {
             const menu = sphericalMenu || creationMenu;
             if (!menu) return;
 
@@ -486,8 +370,6 @@ export const CanvasViewport: React.FC = () => {
             let initialTags: string[] = [];
             let initialPriority: string = 'default';
 
-            // --- CONTEXT AWARE CREATION ---
-            // Unified Logic via ViewConstraints Engine
             if (viewMode !== 'free' && viewMode !== 'void') {
                 const constraint = ViewConstraints.applyConstraints(
                     viewMode || 'free',
@@ -506,6 +388,9 @@ export const CanvasViewport: React.FC = () => {
                 }
             }
 
+            // Allowed structured modes
+            const originMode = (['free', 'void', 'orbital', 'timeline', 'matrix', 'prism', 'archive'].includes(viewMode)) ? viewMode : 'free';
+
             addNote({
                 id: Math.random().toString(36).substr(2, 9),
                 x: spawnX,
@@ -516,10 +401,7 @@ export const CanvasViewport: React.FC = () => {
                 title: '',
                 tags: initialTags,
                 priority: initialPriority as any,
-                // Cast viewMode to ensure compatibility. If it's a complex mode not in 'originMode', it will be just a string.
-                // But our originMode type is broader now or need to check.
-                // For now, cast as any logic-safe string.
-                originMode: (viewMode === 'free' || viewMode === 'void' || viewMode === 'orbital' || viewMode === 'timeline' || viewMode === 'matrix' || viewMode === 'prism') ? viewMode : 'free'
+                originMode: originMode as any
             });
             soundManager.playClick();
             setCreationMenu(null);
@@ -527,17 +409,18 @@ export const CanvasViewport: React.FC = () => {
         }
     };
 
-
     return (
-        <div ref={containerRef} className="absolute inset-0 w-full h-full overflow-hidden bg-black select-none">
+        <div ref={containerRef} className="absolute inset-0 w-full h-full overflow-hidden bg-white dark:bg-[#020617] select-none transition-colors duration-500">
+
+
             {/* Visual Layer: Starfield & Background */}
+            <DashboardBackground />
             <StarfieldLayer />
 
-            {/* Legacy Canvas Ref (if needed for resizing but handled by StarfieldLayer now) */}
-            {/* <canvas ref={canvasRef} ... /> REMOVED */}
+            {/* MODE OVERLAYS (Static Grids/Layouts) */}
+            {viewMode === 'archive' && <DecayOverlay />}
 
             {/* Background Interaction Layer */}
-
             <motion.div
                 className="absolute top-0 left-0 w-full h-full pointer-events-none origin-top-left"
                 animate={{
@@ -547,9 +430,21 @@ export const CanvasViewport: React.FC = () => {
                 }}
                 transition={{ duration: 0 }}
             >
+                {/* Core Focus Ring from Design - Only in Orbital Mode */}
+                {viewMode === 'orbital' && (
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+                        <div className="w-[800px] h-[800px] border border-blue-500/20 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
+                        <div className="w-[600px] h-[600px] border border-blue-500/20 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-60"></div>
+                        <div className="w-[400px] h-[400px] border border-blue-500/20 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-80"></div>
+                        <div className="w-[160px] h-[160px] bg-gradient-radial from-white to-zinc-100 dark:from-zinc-800 dark:to-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 shadow-lg flex items-center justify-center z-0">
+                            <span className="text-zinc-800 dark:text-zinc-200 font-medium tracking-wide cinzel">CORE</span>
+                        </div>
+                    </div>
+                )}
+
                 <ConnectionLayer
                     connections={connections}
-                    notes={notes} // Connections might need filtering too? For now show all connections but maybe nodes vanish.
+                    notes={notes}
                     tempConnection={connectionStart && tempConnectionEnd ? { startId: connectionStart.id, endX: tempConnectionEnd.x, endY: tempConnectionEnd.y } : null}
                     zoom={viewport.zoom}
                 />
@@ -587,21 +482,14 @@ export const CanvasViewport: React.FC = () => {
                 <div className="pointer-events-none">
                     <AnimatePresence mode="popLayout">
                         {visibleNotes.map(note => {
-                            // Slide-on-Rails: Notes are interactive but constrained. Not ReadOnly.
-                            const isReadOnly = false;
-
-                            // Check compatibility of note.originMode with component viewMode prop if needed
-                            // But distinct prop isn't strict enum in PlanetNote yet?
-                            // Let's pass viewMode safely.
-
                             return (
                                 <PlanetNote
                                     key={note.id}
                                     note={note}
                                     isSelected={selectedId === note.id}
                                     zoom={viewport.zoom}
-                                    isReadOnly={isReadOnly}
-                                    layoutOrigin={layoutOrigin} // World Center for Structured Modes
+                                    isReadOnly={false}
+                                    layoutOrigin={layoutOrigin}
                                     viewMode={viewMode === 'free' ? undefined : viewMode}
                                     onConnectStart={(id, x, y) => {
                                         setConnectionStart({ id, x, y });
@@ -637,22 +525,7 @@ export const CanvasViewport: React.FC = () => {
                     >
                         <span>🔗</span> Link to...
                     </button>
-                    {/* Improvements: Color & Delete */}
                     <div className="h-px bg-slate-700 my-1" />
-                    <div className="px-2 py-1 flex gap-1">
-                        {['#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#a855f7'].map(c => (
-                            <button
-                                key={c}
-                                className="w-4 h-4 rounded-full border border-white/20 hover:scale-125 transition-transform"
-                                style={{ backgroundColor: c }}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    updateNote(contextMenu.noteId, { color: c });
-                                    setContextMenu(null);
-                                }}
-                            />
-                        ))}
-                    </div>
                     <button
                         className="w-full text-left px-4 py-2 hover:bg-red-500/20 text-red-300 hover:text-red-200 text-sm flex items-center gap-2"
                         onClick={(e) => {
@@ -668,77 +541,38 @@ export const CanvasViewport: React.FC = () => {
                 </div>
             )}
 
-            {
-                linkingFromId && (
-                    <div className="fixed top-24 left-1/2 -translate-x-1/2 bg-blue-600 px-4 py-2 rounded-full text-white text-sm font-bold shadow-lg z-[100] animate-pulse pointer-events-none">
-                        Select a planet to link connection...
-                    </div>
-                )
-            }
-
-
-            {/* HUD CONTROLLER: CAMERA-RELATIVE SWITCHER */}
-            <div className="fixed bottom-12 left-1/2 -translate-x-1/2 flex gap-3 bg-slate-900/90 p-3 rounded-2xl backdrop-blur-xl border border-white/10 z-[200] pointer-events-auto shadow-[0_0_50px_rgba(0,0,0,0.5)]">
-                {(['free', 'orbital', 'timeline', 'prism', 'matrix'] as const).map((m) => (
-                    <button
-                        key={m}
-                        onClick={() => {
-                            useSettingsStore.getState().setViewMode(m);
-                        }}
-                        className={clsx(
-                            "px-5 py-2 rounded-xl text-s font-bold tracking-wide transition-all duration-300 uppercase",
-                            viewMode === m
-                                ? "bg-indigo-600 text-white shadow-[0_0_20px_rgba(79,70,229,0.6)] scale-110"
-                                : "text-slate-500 hover:text-white hover:bg-white/10"
-                        )}
-                    >
-                        {m}
-                    </button>
-                ))}
-            </div>
-
             <BlackHole isActive={blackHoleActive} />
 
             <AnimatePresence>
                 {creationMenu?.isOpen && (
-                    <CreationMenu
+                    <NotesChoiceRing
                         x={creationMenu.x}
                         y={creationMenu.y}
-                        isOpen={creationMenu.isOpen}
                         onSelect={handleCreateNote}
                         onClose={() => setCreationMenu(null)}
                     />
                 )}
             </AnimatePresence>
 
-            <Toolbar />
-            <SettingsPanel />
-            <SearchTeleport />
-            <ToastOverlay />
-            <QuestOverlay />
-            <InvoiceOverlay />
-
-            <SemanticZoomController />
-            {/* <PhysicsLoop /> REMOVED for Engine v2 */}
-
-            {showMinimap && <MiniMap />}
-
             <AnimatePresence>
                 {sphericalMenu?.isOpen && (
-                    <SphericalChooser
+                    <NotesChoiceRing
                         x={sphericalMenu.x}
                         y={sphericalMenu.y}
-                        onSelect={(type) => handleCreateNote(type)}
+                        onSelect={handleCreateNote}
                         onClose={() => setSphericalMenu(null)}
                     />
                 )}
             </AnimatePresence>
 
-            <div className="absolute top-4 left-4 text-white/50 pointer-events-none font-light tracking-widest text-sm uppercase z-50">
-                Stardust Canvas <span className="text-xs text-amber-400 font-bold opacity-100">v2.3 (COMPARTMENTS)</span>
-            </div>
+            <SearchTeleport />
+            <ToastOverlay />
+            <SemanticZoomController />
+            {showMinimap && <MiniMap />}
             <CanvasInputHandler />
+
+            {/* MAIN DASHBOARD CHROME */}
+            <DashboardOverlay />
         </div>
     );
 };
-

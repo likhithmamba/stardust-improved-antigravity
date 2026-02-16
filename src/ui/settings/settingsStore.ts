@@ -24,7 +24,9 @@ export interface SettingsState {
 
     // Lens System (Ultra Mode)
     viewMode: ViewMode;
-    setViewMode: (v: ViewMode) => void;
+    designSystem: 'zero-point' | 'solar'; // Dual design system
+    setViewMode: (v: ViewMode | 'void' | 'matrix' | 'prism' | 'orbital' | 'timeline' | 'free') => void;
+    setDesignSystem: (ds: 'zero-point' | 'solar') => void;
 
     // Toolbar Settings
     toolbarMode: 'fixed' | 'auto-hide' | 'collapsed';
@@ -54,10 +56,12 @@ export const useSettingsStore = create<SettingsState>()(
                 questMode: true,
             },
             viewMode: 'void',
+            designSystem: 'zero-point',
             setViewMode: (v) => {
-                set({ viewMode: v });
-                useStore.getState().setViewMode(v);
+                set({ viewMode: v as ViewMode });
+                useStore.getState().setViewMode(v as ViewMode);
             },
+            setDesignSystem: (ds) => set({ designSystem: ds }),
             setMode: (m: Mode) => {
                 set((state) => {
                     const updates: any = { mode: m };

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TIMELINE: Temporal Star Stream</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#eebd2b",
+                        "background-light": "#f8f7f6",
+                        "background-dark": "#0a0a0c", // Deep space variant
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Manrope', sans-serif;
+            overflow-x: hidden;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-dark {
+            background: rgba(10, 10, 12, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(238, 189, 43, 0.2);
+        }
+        .light-beam {
+            background: linear-gradient(180deg, rgba(238, 189, 43, 0) 0%, #eebd2b 20%, #eebd2b 80%, rgba(238, 189, 43, 0) 100%);
+            box-shadow: 0 0 20px rgba(238, 189, 43, 0.4);
+        }
+        .star-field {
+            background-image: 
+                radial-gradient(1px 1px at 20px 30px, #fff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 40px 70px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 50px 160px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 130px 80px, #fff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 160px 120px, #fff, rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 200px 200px;
+        }
+        .planet-sun {
+            box-shadow: 0 0 40px rgba(238, 189, 43, 0.15), inset 0 0 20px rgba(255, 255, 255, 0.05);
+        }
+        .filament-left {
+            border-top: 1px solid rgba(238, 189, 43, 0.3);
+            border-right: 1px solid rgba(238, 189, 43, 0.3);
+            border-radius: 0 40px 0 0;
+        }
+        .filament-right {
+            border-top: 1px solid rgba(238, 189, 43, 0.3);
+            border-left: 1px solid rgba(238, 189, 43, 0.3);
+            border-radius: 40px 0 0 0;
+        }
+        .amber-flare {
+            box-shadow: 0 0 60px rgba(238, 189, 43, 0.6);
+            border-color: rgba(238, 189, 43, 0.8);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white transition-colors duration-500">
+<!-- Background Layers -->
+<div class="fixed inset-0 pointer-events-none star-field opacity-30"></div>
+<div class="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_50%,_rgba(238,189,43,0.05),transparent_70%)]"></div>
+<div class="layout-container flex h-full grow flex-col relative z-10">
+<!-- TopNavBar (Glassmorphic) -->
+<header class="fixed top-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[1200px] glass rounded-full px-6 py-3 flex items-center justify-between z-50">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-3 text-white">
+<div class="size-8 bg-primary rounded-full flex items-center justify-center text-background-dark">
+<span class="material-symbols-outlined text-lg">auto_awesome</span>
+</div>
+<h2 class="text-white text-lg font-extrabold leading-tight tracking-[0.2em] uppercase font-display">Timeline</h2>
+</div>
+<div class="h-6 w-px bg-white/10 hidden md:block"></div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-white/60 hover:text-primary text-sm font-medium tracking-widest transition-colors uppercase" href="#">Focus</a>
+<a class="text-white/60 hover:text-primary text-sm font-medium tracking-widest transition-colors uppercase" href="#">Archive</a>
+<a class="text-white/60 hover:text-primary text-sm font-medium tracking-widest transition-colors uppercase" href="#">Galaxy</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<label class="hidden sm:flex items-center glass rounded-full px-4 py-1.5 w-64 border-none">
+<span class="material-symbols-outlined text-primary text-sm">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm text-white placeholder:text-white/30 w-full" placeholder="Search cosmic history..." type="text"/>
+</label>
+<button class="size-10 flex items-center justify-center glass rounded-full text-white hover:bg-primary hover:text-background-dark transition-all">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/40" data-alt="User profile avatar in space" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuArlPTriI9vI7ZyH-ZcYKR6OynE6De06kS1ZNui4SzbNypwtT1hN4SkMclfZYhI3dp6Msm8LJyU5FyLAZK8msWvlAFpdMvcjFroPWsQYqtdFCmjcx9YhrUki8BHQUEwar-NviCIOQk_OrRF2yLqqtVqbxFdqv4jq712_UE0L0zcfTK_PecXih7v2aBQ06e9ZtgX3wzEe4Wz_W2i0VpGw8SyyytZW_GtYkZ0SXhFdZZewRXCqokcVrx8EHYOO7WMbwNgNHDaJCBWLQ");'></div>
+</div>
+</header>
+<!-- Main Timeline Container -->
+<main class="flex flex-col items-center pt-32 pb-64 px-4">
+<!-- Headline Section -->
+<div class="flex flex-col items-center mb-24">
+<h1 class="text-white tracking-[0.3em] text-[42px] font-extralight uppercase leading-tight text-center pb-2">Temporal Star Stream</h1>
+<p class="text-primary/60 text-sm font-medium tracking-[0.5em] uppercase text-center max-w-md">Variant 1: Star Stream Architecture</p>
+<div class="mt-8 flex gap-3">
+<div class="px-4 py-1.5 glass rounded-full text-[10px] text-primary uppercase font-bold tracking-tighter flex items-center gap-2">
+<span class="size-2 rounded-full bg-primary animate-pulse"></span>
+                        Live Stream
+                    </div>
+<div class="px-4 py-1.5 glass rounded-full text-[10px] text-white/50 uppercase font-bold tracking-tighter">
+                        Oct 24, 2024
+                    </div>
+</div>
+</div>
+<!-- Central Timeline Axis -->
+<div class="relative w-full max-w-[1000px] flex justify-center">
+<!-- The Light Beam (Central vertical axis) -->
+<div class="absolute top-0 bottom-0 w-[2px] light-beam"></div>
+<div class="flex flex-col gap-32 w-full relative">
+<!-- Timeline Node 1 (Left) -->
+<div class="relative flex justify-center w-full">
+<div class="absolute left-1/2 -translate-x-full pr-12 text-right top-0 flex flex-col items-end group">
+<div class="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-px bg-primary/30"></div>
+<div class="glass-dark planet-sun p-6 rounded-[2.5rem] w-80 hover:amber-flare transition-all duration-500 cursor-pointer">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-primary">draw</span>
+<span class="text-[10px] font-bold text-primary tracking-widest uppercase">Priority 01</span>
+</div>
+<h3 class="text-white text-xl font-bold mb-2">Design System Draft</h3>
+<p class="text-white/50 text-sm leading-relaxed mb-4">Finalizing the core components for the Andromeda interface upgrade.</p>
+<div class="flex gap-2">
+<span class="px-2 py-1 bg-primary/10 rounded-full text-[9px] text-primary">#interface</span>
+<span class="px-2 py-1 bg-primary/10 rounded-full text-[9px] text-primary">#v1</span>
+</div>
+</div>
+</div>
+<!-- Time Marker on Beam -->
+<div class="z-20 size-4 rounded-full bg-primary border-4 border-background-dark shadow-[0_0_10px_#eebd2b]"></div>
+<div class="absolute left-1/2 translate-x-8 top-1/2 -translate-y-1/2">
+<p class="text-primary font-display font-medium text-xs tracking-[0.2em] uppercase">10:00 AM</p>
+</div>
+</div>
+<!-- Timeline Node 2 (Right) -->
+<div class="relative flex justify-center w-full">
+<!-- Filament Connection -->
+<div class="absolute right-1/2 translate-x-full pl-12 text-left top-0 flex flex-col items-start group">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-px bg-primary/30"></div>
+<div class="glass-dark planet-sun p-6 rounded-[2.5rem] w-80 amber-flare transition-all duration-500 cursor-pointer">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-primary">rocket_launch</span>
+<span class="text-[10px] font-bold text-red-400 tracking-widest uppercase animate-pulse">Critical</span>
+</div>
+<h3 class="text-white text-xl font-bold mb-2">Launch Voyager I</h3>
+<p class="text-white/50 text-sm leading-relaxed mb-4">Automated deployment of the main node to the Orion cluster.</p>
+<div class="flex items-center gap-3">
+<div class="flex -space-x-2">
+<div class="size-6 rounded-full border border-background-dark bg-slate-500" data-alt="Team avatar 1"></div>
+<div class="size-6 rounded-full border border-background-dark bg-slate-400" data-alt="Team avatar 2"></div>
+</div>
+<span class="text-[10px] text-white/40 italic">2 collaborators synced</span>
+</div>
+</div>
+</div>
+<!-- Time Marker on Beam -->
+<div class="z-20 size-4 rounded-full bg-primary border-4 border-background-dark shadow-[0_0_15px_#eebd2b]"></div>
+<div class="absolute right-1/2 -translate-x-8 top-1/2 -translate-y-1/2 text-right">
+<p class="text-primary font-display font-medium text-xs tracking-[0.2em] uppercase">14:00 PM</p>
+</div>
+</div>
+<!-- Timeline Node 3 (Left) - Different Shape/Style -->
+<div class="relative flex justify-center w-full">
+<div class="absolute left-1/2 -translate-x-full pr-12 text-right top-0 flex flex-col items-end group">
+<div class="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-px bg-primary/30"></div>
+<div class="glass-dark planet-sun p-6 rounded-full w-64 h-64 flex flex-col items-center justify-center text-center hover:scale-105 transition-all">
+<span class="material-symbols-outlined text-primary mb-2 text-3xl">light_mode</span>
+<h3 class="text-white text-lg font-bold">Stellar Sync</h3>
+<p class="text-white/50 text-xs px-4 mt-2">Daily alignment with the Nebula engineering team.</p>
+</div>
+</div>
+<!-- Time Marker on Beam -->
+<div class="z-20 size-4 rounded-full bg-primary border-4 border-background-dark shadow-[0_0_10px_#eebd2b]"></div>
+<div class="absolute left-1/2 translate-x-8 top-1/2 -translate-y-1/2">
+<p class="text-primary font-display font-medium text-xs tracking-[0.2em] uppercase">OCT 25</p>
+</div>
+</div>
+<!-- Timeline Node 4 (Right) -->
+<div class="relative flex justify-center w-full">
+<div class="absolute right-1/2 translate-x-full pl-12 text-left top-0 flex flex-col items-start group">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-px bg-primary/30"></div>
+<div class="glass-dark planet-sun p-6 rounded-[2.5rem] w-80 hover:amber-flare transition-all duration-500 cursor-pointer">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-primary">biotech</span>
+<span class="text-[10px] font-bold text-primary tracking-widest uppercase">Research</span>
+</div>
+<h3 class="text-white text-xl font-bold mb-2">Quantum Research</h3>
+<p class="text-white/50 text-sm leading-relaxed mb-4">Exploring non-linear storage mechanisms for long-term archival.</p>
+<div class="w-full bg-white/5 h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[65%] shadow-[0_0_10px_#eebd2b]"></div>
+</div>
+<div class="flex justify-between mt-2">
+<span class="text-[9px] text-white/30 uppercase">Progress</span>
+<span class="text-[9px] text-primary uppercase">65%</span>
+</div>
+</div>
+</div>
+<div class="z-20 size-4 rounded-full bg-primary border-4 border-background-dark shadow-[0_0_10px_#eebd2b]"></div>
+<div class="absolute right-1/2 -translate-x-8 top-1/2 -translate-y-1/2 text-right">
+<p class="text-primary font-display font-medium text-xs tracking-[0.2em] uppercase">11:30 AM</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating HUD (Heads-Up Display) Bottom -->
+<div class="fixed bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-4 z-50">
+<div class="glass px-8 py-4 rounded-full flex items-center gap-10 shadow-2xl">
+<button class="flex flex-col items-center gap-1 text-white/50 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">explore</span>
+<span class="text-[8px] uppercase tracking-tighter font-bold">Today</span>
+</button>
+<div class="h-8 w-px bg-white/10"></div>
+<button class="size-14 bg-primary text-background-dark rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(238,189,43,0.4)] hover:scale-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-3xl font-bold">add</span>
+</button>
+<div class="h-8 w-px bg-white/10"></div>
+<button class="flex flex-col items-center gap-1 text-white/50 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">zoom_out_map</span>
+<span class="text-[8px] uppercase tracking-tighter font-bold">Zoom Out</span>
+</button>
+</div>
+</div>
+<!-- Side Utility (Fixed Left) -->
+<aside class="fixed left-8 top-1/2 -translate-y-1/2 hidden xl:flex flex-col gap-4">
+<div class="glass p-2 rounded-full flex flex-col gap-2">
+<button class="size-10 rounded-full flex items-center justify-center text-primary bg-primary/20">
+<span class="material-symbols-outlined">schedule</span>
+</button>
+<button class="size-10 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/5 transition-all">
+<span class="material-symbols-outlined">map</span>
+</button>
+<button class="size-10 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/5 transition-all">
+<span class="material-symbols-outlined">delete_forever</span>
+</button>
+<button class="size-10 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/5 transition-all">
+<span class="material-symbols-outlined">cloud</span>
+</button>
+</div>
+<div class="glass p-2 rounded-full flex flex-col gap-2">
+<button class="size-10 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/5 transition-all">
+<span class="material-symbols-outlined">help</span>
+</button>
+</div>
+</aside>
+<!-- Infinite Scroll Gradient Fades -->
+<div class="fixed top-0 left-0 right-0 h-40 bg-gradient-to-b from-background-dark to-transparent pointer-events-none"></div>
+<div class="fixed bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-background-dark to-transparent pointer-events-none"></div>
+</div>
+</body></html>

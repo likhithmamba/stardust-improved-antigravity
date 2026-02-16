@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VOID: Constellation Cluster Zoom-In</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7f0df2",
+                        "background-light": "#f7f5f8",
+                        "background-dark": "#191022",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .glassmorphic {
+            background: rgba(54, 34, 73, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .data-pulse {
+            background: linear-gradient(90deg, transparent, #7f0df2, transparent);
+            box-shadow: 0 0 15px #7f0df2;
+        }
+        .planet-glow {
+            box-shadow: inset 0 0 50px rgba(127, 13, 242, 0.4), 0 0 30px rgba(127, 13, 242, 0.2);
+        }
+        .bokeh-stars {
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 40px 70px, #fff, rgba(0,0,0,0)),
+                radial-gradient(3px 3px at 50px 160px, #ddd, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 200px 200px;
+            filter: blur(1px);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-white selection:bg-primary/40 overflow-hidden">
+<!-- Global Background with Bokeh Effect -->
+<div class="fixed inset-0 z-0 bg-[#0a0612]">
+<div class="absolute inset-0 bokeh-stars opacity-30"></div>
+<!-- Distant Clusters blurred -->
+<div class="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-[120px]"></div>
+<div class="absolute bottom-1/3 right-1/4 w-96 h-96 bg-blue-900/10 rounded-full blur-[150px]"></div>
+</div>
+<!-- Main Content Layout -->
+<div class="relative z-10 flex h-screen w-full flex-col">
+<!-- Header / Navigation Bar -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-white/10 px-10 py-3 glassmorphic">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-4 text-white">
+<div class="size-6 text-primary">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_6_330)">
+<path clip-rule="evenodd" d="M24 0.757355L47.2426 24L24 47.2426L0.757355 24L24 0.757355ZM21 35.7574V12.2426L9.24264 24L21 35.7574Z" fill="currentColor" fill-rule="evenodd"></path>
+</g>
+<defs>
+<clippath id="clip0_6_330"><rect fill="white" height="48" width="48"></rect></clippath>
+</defs>
+</svg>
+</div>
+<h2 class="text-white text-xl font-bold leading-tight tracking-[0.1em]">VOID</h2>
+</div>
+<nav class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<a class="text-white/60 hover:text-white text-sm font-medium transition-colors" href="#">Universe</a>
+<span class="text-white/30 text-xs">/</span>
+<a class="text-white text-sm font-bold" href="#">Strategy Cluster</a>
+</div>
+</nav>
+</div>
+<div class="flex flex-1 justify-end gap-6">
+<label class="flex flex-col min-w-40 !h-10 max-w-64">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full glassmorphic border-none">
+<div class="text-white/50 flex items-center justify-center pl-4">
+<span class="material-symbols-outlined text-sm">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border-none bg-transparent placeholder:text-white/30 px-4 pl-2 text-sm font-normal" placeholder="Deep search cluster..." value=""/>
+</div>
+</label>
+<div class="flex gap-2">
+<button class="flex items-center justify-center rounded-lg h-10 w-10 glassmorphic hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+<button class="flex items-center justify-center rounded-lg h-10 w-10 glassmorphic hover:bg-white/10 transition-colors relative">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full"></span>
+</button>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-white/20" data-alt="User avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAkBAA0tPZ4792c2aEFB6UfWHAhf0i3HHpjcbA60tpObk4tC7jtaEjR4Bnzhyj7fSWiBvFVKcmDtIYKkyjrq9B8hn1FvdiIuTzg_xayhh-fEvc7gOtoXD-pPmKJREd9fQ0pkRF-ZEObXeXYo8z0KMyqr0NP8JE1ub_bxrWjwjJiWc_Dj-BxVm-JgFGoW3BTu8ImNHa2KZROuFg6FCv8NvdaHp74HIO9S1zpXwTEXfDmdN-Du0aeW1wPai5NFgxQi6I_NUEmn98USQ");'></div>
+</div>
+</header>
+<!-- Deep Zoom Viewport -->
+<main class="relative flex-1 overflow-hidden p-8 flex items-center justify-center">
+<!-- Dynamic Background Energy Conduits (Large SVG Lines) -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none opacity-40" xmlns="http://www.w3.org/2000/svg">
+<path d="M-100,500 Q400,450 600,600" fill="none" stroke="#7f0df2" stroke-opacity="0.3" stroke-width="8"></path>
+<path d="M600,600 Q900,800 1400,700" fill="none" stroke="#7f0df2" stroke-opacity="0.3" stroke-width="8"></path>
+<path d="M600,600 Q400,200 800,100" fill="none" stroke="#7f0df2" stroke-opacity="0.3" stroke-width="6"></path>
+<!-- Pulsing data bits represented as circles -->
+<circle class="animate-pulse shadow-[0_0_10px_#fff]" cx="200" cy="485" fill="#fff" r="3"></circle>
+<circle class="animate-pulse shadow-[0_0_10px_#fff]" cx="800" cy="725" fill="#fff" r="4"></circle>
+<circle class="animate-pulse" cx="550" cy="450" fill="#fff" r="2"></circle>
+</svg>
+<!-- The Cluster Nodes -->
+<div class="relative w-full h-full">
+<!-- Central Node (Focused) -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+<div class="relative group">
+<!-- Orbit Ring -->
+<div class="absolute inset-[-40px] rounded-full border border-white/5 border-dashed animate-[spin_20s_linear_infinite]"></div>
+<!-- Planet Sphere -->
+<div class="w-[380px] h-[380px] rounded-full relative overflow-hidden planet-glow transition-transform duration-700 group-hover:scale-105">
+<div class="absolute inset-0 bg-cover bg-center mix-blend-overlay opacity-60" data-alt="Hyper-realistic planet surface with craters and clouds" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDau3-ywYAemh_UH5UnTUITtyWPWZP_XJvoS9lRZaJHODUXwro_vX_BQ0fEe3qfmjOSApzL5wug5TIBx8VQ0Rf95f0Shzi_AE_9bNsGeVVHsWB9YKCu7s0BV4fLGNHvL5xPINHI-2J_K_IHqH5HzrsLleKznGuKK60y4TGwvYdHrQLs4aCCCFw9-YbQJiOjJ47B8-69cJ6rib51nIDWlRSxdFz4veOyRTEjGYBc2EJD7rIR7pIyzIzLBIa5Wheo1PLmOQLjZPvlFA");'></div>
+<div class="absolute inset-0 bg-gradient-to-tr from-primary/40 via-transparent to-white/10"></div>
+<!-- Core Sun -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-primary rounded-full blur-[40px] opacity-80"></div>
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full blur-[10px] opacity-40"></div>
+</div>
+<!-- Floating Note Pane (Focused UI) -->
+<div class="absolute top-[80px] -right-[320px] w-[450px] glassmorphic rounded-xl p-6 shadow-2xl border border-primary/30 z-20">
+<div class="flex justify-between items-start mb-4">
+<div>
+<span class="text-primary text-xs font-bold uppercase tracking-widest">Active Node</span>
+<h1 class="text-2xl font-bold mt-1">Core Expansion Strategy</h1>
+</div>
+<button class="p-2 rounded-lg hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined">open_in_full</span>
+</button>
+</div>
+<div class="space-y-4 text-white/80 text-sm leading-relaxed max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+<p>The 'Plant Sun' core sustains the data-pulses across the cluster conduits. Focus on hyper-realistic planetary textures and internal illumination.</p>
+<ul class="space-y-2">
+<li class="flex items-center gap-3">
+<div class="w-4 h-4 rounded border border-primary/50 flex items-center justify-center">
+<span class="material-symbols-outlined text-[12px] text-primary">check</span>
+</div>
+<span>Define visual language for high-density nodes</span>
+</li>
+<li class="flex items-center gap-3">
+<div class="w-4 h-4 rounded border border-white/20"></div>
+<span>Map out data pulse frequencies (Electricity style)</span>
+</li>
+<li class="flex items-center gap-3">
+<div class="w-4 h-4 rounded border border-white/20"></div>
+<span>Finalize bokeh background parameters</span>
+</li>
+</ul>
+<div class="p-3 bg-white/5 rounded-lg border border-white/10 mt-4">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary text-sm">attachment</span>
+<span class="text-xs font-bold">RESOURCES</span>
+</div>
+<div class="flex gap-2">
+<div class="h-8 w-8 rounded bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-xs">image</span>
+</div>
+<div class="h-8 w-8 rounded bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-xs">description</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-6 flex gap-3">
+<button class="flex-1 h-10 bg-primary hover:bg-primary/80 text-white font-bold rounded-lg text-sm transition-all shadow-lg shadow-primary/20">
+                                    Edit Note
+                                </button>
+<button class="px-3 h-10 glassmorphic border-white/20 hover:bg-white/10 text-white rounded-lg transition-all">
+<span class="material-symbols-outlined">share</span>
+</button>
+</div>
+</div>
+<!-- HUD Labels -->
+<div class="absolute -bottom-16 left-1/2 -translate-x-1/2 text-center whitespace-nowrap">
+<div class="px-4 py-1.5 glassmorphic rounded-full border border-primary/40 flex items-center gap-3">
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full border-2 border-[#191022] bg-blue-500 text-[8px] flex items-center justify-center">JD</div>
+<div class="w-6 h-6 rounded-full border-2 border-[#191022] bg-purple-500 text-[8px] flex items-center justify-center">AL</div>
+</div>
+<span class="text-[11px] font-bold text-white/70">CONNECTED TO 14 NODES</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Secondary Nodes (Orbits) -->
+<!-- R&D Orbit -->
+<div class="absolute top-1/4 left-1/4 -translate-x-1/2 flex flex-col items-center group cursor-pointer">
+<div class="w-24 h-24 rounded-full relative overflow-hidden planet-glow border border-white/10">
+<div class="absolute inset-0 bg-cover opacity-40 mix-blend-soft-light" data-alt="Small icy moon texture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCwBHr34mbPx-6FYdnTgHRZUO0SRs5Da1p1Si76ejD4Yy9Sp3TSZX6QssW315YrxnPAl3Pse1LVUY8MbiKzscGSmaJSo16rfOI83IYnVJZcy1L8qPS6B6kzgUapLl6Xb7eGWXF-_kwO_x90fMtQe-D_f3_R4Kr5DNYmWXn5PEKJdMg3nUrwE5ccGSEmAMvd8V1LjlVa-P75jhEcWKejQnEunYCsMSflycCC287vDLd7oz16_pDmGyAavgTF7gsXGk80eY-41Mk_rw");'></div>
+<div class="absolute inset-0 bg-gradient-to-br from-blue-400/30 to-transparent"></div>
+</div>
+<div class="mt-4 text-center">
+<p class="text-xs font-bold tracking-widest text-white/60">R&amp;D ORBIT</p>
+<p class="text-[10px] text-primary">5 Connections</p>
+</div>
+</div>
+<!-- Fiscal Ring -->
+<div class="absolute bottom-1/4 left-1/3 -translate-x-1/2 flex flex-col items-center group cursor-pointer">
+<div class="w-20 h-20 rounded-full relative overflow-hidden planet-glow border border-white/10">
+<div class="absolute inset-0 bg-cover opacity-40" data-alt="Dense rocky planet texture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCdAo38tWgVjM3pGYikr6Zt742frzWbjp_70sartWtw5OYeJY4JSbJr9zrVtP-OnLoOLoAQMpIFwiWHxffIqcwMaiTFqII_9wu9z_xZhEFfnweB4nUz1P7sEuVXRgCNsseGVAjKWLeL4dZI5itBTR_XB0FKVfTZaTrjlVi2cW-MV9RTzWeueSmtpM3ZXYGC_mxVswFF5LLRFPDkNJlIFJqnQ-_WwSSwgChF_-OAgn0QvnrJpipLZFpRI8i3ZKtzU3Qxq4J0HmYg3w");'></div>
+<div class="absolute inset-0 bg-gradient-to-t from-orange-400/20 to-transparent"></div>
+</div>
+<div class="mt-4 text-center">
+<p class="text-xs font-bold tracking-widest text-white/60">FISCAL RING</p>
+<p class="text-[10px] text-primary">2 Connections</p>
+</div>
+</div>
+<!-- Operations Moon -->
+<div class="absolute top-1/3 right-1/4 translate-x-1/2 flex flex-col items-center group cursor-pointer">
+<div class="w-32 h-32 rounded-full relative overflow-hidden planet-glow border border-white/10">
+<div class="absolute inset-0 bg-cover opacity-50" data-alt="Atmospheric gas giant texture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD0x52kxjhyDU4l38AF22jm0uKNJqhLzekeKA5s8ZIVpPUvXePaB_gYnGvoYRn3qaW4W540m1awTVi4XLViwwBbJLh_CTSktISUJ-8iM5cCjAjeI88CbLhbIOwFJB1-Q6xujnk0i_OUqIHLrQ8CtGFdJ8hY0F6awY3vw2Asp0pYC6rnnVzQE___Ld6RvGK6HII1L17WGzUlRSp8ObenUxjpqWR-PljrAM3fWA-6jzSwMdwwcAhtfN-JJBBqHOBMG5ZSNxa2OMkCrg");'></div>
+<div class="absolute inset-0 bg-gradient-to-tr from-green-400/20 to-transparent"></div>
+</div>
+<div class="mt-4 text-center">
+<p class="text-xs font-bold tracking-widest text-white/60">OPERATIONS MOON</p>
+<p class="text-[10px] text-primary">8 Connections</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer / Cluster Stats Bar -->
+<footer class="px-10 py-4 glassmorphic border-t border-white/10 flex items-center justify-between">
+<div class="flex items-center gap-10">
+<div class="flex flex-col">
+<span class="text-[10px] text-white/40 font-bold uppercase tracking-wider">Active Cluster</span>
+<span class="text-sm font-bold">2024 Core Expansion</span>
+</div>
+<div class="h-8 w-px bg-white/10"></div>
+<div class="flex items-center gap-4">
+<div class="flex flex-col">
+<span class="text-[10px] text-white/40 font-bold uppercase tracking-wider">Data Flow</span>
+<div class="flex items-center gap-2">
+<span class="text-sm font-bold">1.2 GB/s</span>
+<span class="material-symbols-outlined text-primary text-xs">electric_bolt</span>
+</div>
+</div>
+<div class="flex flex-col ml-4">
+<span class="text-[10px] text-white/40 font-bold uppercase tracking-wider">Sync Status</span>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+<span class="text-sm font-bold">Real-time</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/20 border border-primary/40 text-primary text-xs font-bold hover:bg-primary/30 transition-all">
+<span class="material-symbols-outlined text-sm">filter_center_focus</span>
+                    RE-CENTER CLUSTER
+                </button>
+<div class="flex items-center glassmorphic rounded-lg p-1 border border-white/10">
+<button class="w-8 h-8 flex items-center justify-center text-white/40 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-sm">remove</span>
+</button>
+<span class="px-3 text-xs font-bold border-x border-white/10">180%</span>
+<button class="w-8 h-8 flex items-center justify-center text-white/40 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-sm">add</span>
+</button>
+</div>
+</div>
+</footer>
+</div>
+</body></html>

@@ -1,0 +1,81 @@
+/* Common Styles for Galactic Note Ring Overview Variants */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+  --primary-color: #3b82f6;
+  --background-light: #f1f5f9;
+  --background-dark: #020617;
+  --text-light: #f1f5f9;
+  --text-dark: #020617;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+  transition-colors duration-500;
+}
+
+.dark body {
+  background-color: var(--background-dark);
+  color: var(--text-light);
+}
+
+.light body {
+  background-color: var(--background-light);
+  color: var(--text-dark);
+}
+
+/* Navigation styles shared between variants */
+.nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border-radius: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .nav-container {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-button {
+  padding: 0.75rem;
+  margin: 0 0.25rem;
+  color: #64748b;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.dark .nav-button {
+  color: #94a3b8;
+}
+
+.nav-button:hover {
+  background-color: #f1f5f9;
+  transform: scale(1.05);
+}
+
+.dark .nav-button:hover {
+  background-color: #334155;
+}
+
+.mode-toggle {
+  position: absolute;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+}
+
+.dark .mode-toggle {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}

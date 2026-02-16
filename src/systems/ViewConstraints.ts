@@ -122,19 +122,24 @@ export class ViewConstraints {
         const isTop = relY < 0;
 
         // Apply Logic Data
+        // Apply Logic Data (Manifesto Map)
+        // TL (Solar Core) -> High Heat/Gravity (Crisis)
+        // TR (Nebula Flow) -> High Value, Low Urgency (Deep Work)
+        // BL (Starlight)   -> Distractions/Nice to have
+        // BR (Void)        -> Delete/Delegate
+
         if (isLeft && isTop) {
-            tags = ['urgent'];
+            tags = ['crisis', 'solar-core'];
             priority = 'critical';
         } else if (!isLeft && isTop) {
-            tags = [];
-            priority = 'critical'; // Important but not urgent -> Schedule -> High/Critical?
-            // "Plan" usually means high priority execution later.
+            tags = ['deep-work', 'nebula'];
+            priority = 'high';
         } else if (isLeft && !isTop) {
-            tags = ['urgent'];
-            priority = 'low'; // Delegate -> urgent but low personal priority
+            tags = ['starlight'];
+            priority = 'low';
         } else {
-            tags = [];
-            priority = 'low'; // Eliminate
+            tags = ['void-dump'];
+            priority = 'low';
         }
 
         return {

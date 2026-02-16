@@ -1,563 +1,363 @@
 @import "tailwindcss";
-
-
-
-/* Standard Keyframes */
-@keyframes pulse-glow {
-
-  0%,
-  100% {
-    opacity: 1;
-    box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
-  }
-
-  50% {
-    opacity: 0.7;
-    box-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
-  }
-}
-
-@keyframes float {
-
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-.animate-spin-slow {
-  animation: spin 20s linear infinite;
-}
+/* Solar Strategy Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=JetBrains+Mono:wght@300;400&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+/* Heartbeat Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Noto+Sans:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap');
 
 :root {
-  /* Solar & Glass Tokens */
-  --sun-d: 320px;
-  --jupiter-d: 160px;
-  --earth-d: 64px;
+  /* Core Colors */
+  --bg-color: #ffffff;
+  --text-primary: #1a1a1a;
+  --text-secondary: #71717a;
+  --accent-border: #e4e4e7;
 
-  --glass-bg: rgba(255, 255, 255, 0.06);
-  --glass-blur: 12px;
-  --glass-border: rgba(255, 255, 255, 0.08);
+  /* Orbital System Tokens */
+  --orbital-ring: rgba(59, 130, 246, 0.2);
+  --orbital-ring-active: rgba(59, 130, 246, 0.4);
+  --panel-bg: rgba(255, 255, 255, 0.9);
+  --note-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.8);
+  --planet-glass: rgba(255, 255, 255, 0.65);
 
-  --glow-sun: 252, 211, 77;
-  /* Amber-300 */
-  --glow-jupiter: 245, 158, 11;
-  /* Amber-500 */
-  --glow-earth: 56, 189, 248;
-  /* Sky-400 */
+  /* Heartbeat Tokens */
+  --void-bg: #050510;
+  --primary-blue: #3b82f6;
+  --primary-indigo: #6366f1;
+  --primary-amber: #eebd2b;
+  --primary-void: #1919e6;
 
-  --ui-pill-bg: rgba(10, 11, 13, 0.45);
-  --ui-pill-border: rgba(255, 255, 255, 0.06);
-
-  --color-void: #050505;
-  --color-text: #e2e8f0;
+  /* Dark Mode Overrides applied via class */
 }
 
-/* Utility glass class */
-.glass {
-  background: rgba(200, 220, 255, 0.08);
-  /* Slightly bluer/lighter for better visibility */
-  -webkit-backdrop-filter: blur(16px);
+.dark {
+  --bg-color: #020617;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --accent-border: #1e293b;
+  --orbital-ring: rgba(59, 130, 246, 0.15);
+  --orbital-ring-active: rgba(59, 130, 246, 0.3);
+  --panel-bg: rgba(15, 23, 42, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --planet-glass: rgba(30, 41, 59, 0.7);
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  overflow: hidden;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+/* Typography Utilities */
+.font-display {
+  font-family: 'Newsreader', serif;
+}
+
+.font-sans-alt {
+  font-family: 'Noto Sans', sans-serif;
+}
+
+.font-manrope {
+  font-family: 'Manrope', sans-serif;
+}
+
+.cinzel {
+  font-family: 'Cinzel', serif;
+}
+
+.mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Components */
+.glass-panel {
+  background: var(--panel-bg);
   backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
 }
 
-/* Selection ring */
-.selection-ring {
-  position: absolute;
-  pointer-events: none;
-  border-radius: 9999px;
-  /* Use a default glow, or override inline via React for specific planet colors if needed. 
-     Using Earth glow as default per snippet */
-  box-shadow: 0 0 12px rgba(var(--glow-earth), 0.4), 0 0 28px rgba(var(--glow-earth), 0.12);
-  /* The snippet says transform translate -6px, but that depends on parent positioning. 
-     We'll handle centering in React, or apply this if parent is exact size. */
-  inset: -6px;
-  /* Replaces transform hack for specific sizing if parent is relative */
-}
-
-/* Minimal toolbar pill */
-.stardust-toolbar {
-  position: fixed;
-  bottom: 24px;
-  /* User said top: 18px but typically toolbars are bottom or side. Prompt images show bottom. I will stick to bottom for better UX or follow strictly? User code snippet said top:18px. Images show bottom. I'll stick to bottom as it overrides the previous absolute position better. Verify? User text: "Minimal toolbar pill... top: 18px". Okay I will use TOP as requested in CSS text, although image shows bottom. Text usually overrides. Wait. User snippet says "stardust-toolbar { position: fixed; top: 18px; left: 18px... }" */
-  /* actually, let's respect the user's CSS snippet exactly for position but center it if they want? 
-     "this is the pic of how it should look... stardust-toolbar ... top: 18px left: 18px"
-     The image 1 shows bottom. The snippet says top/left. I will follow the SNIPPET for style but maybe keep the centering if it looks better? 
-     Actually, "Left-to-right small icon set" was previous request.
-     Let's use the SNIPPET values. */
-  top: 18px;
-  left: 50%;
-  transform: translateX(-50%);
-  /* Centered looks better than left 18px for a main toolbar, modifying slightly for "Best Practices WOW" */
-  display: flex;
-  gap: 8px;
-  padding: 6px;
-  border-radius: 9999px;
-  align-items: center;
-  z-index: 60;
-  background: var(--ui-pill-bg);
-  border: 1px solid var(--ui-pill-border);
-  -webkit-backdrop-filter: blur(8px);
+.note-planet {
+  background: var(--planet-glass);
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    inset 0 0 20px rgba(255, 255, 255, 0.5),
+    0 8px 32px rgba(0, 0, 0, 0.05),
+    0 2px 8px rgba(0, 0, 0, 0.02);
   backdrop-filter: blur(8px);
-}
-
-.stardust-toolbar button {
-  display: inline-flex;
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 9999px;
-  transition: all 0.2s ease;
-  color: rgba(255, 255, 255, 0.6);
+  aspect-ratio: 1/1;
+  overflow: visible;
+  /* Changed to visible for glows */
 }
 
-.stardust-toolbar button:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+.dark .note-planet {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    inset 0 0 20px rgba(255, 255, 255, 0.05),
+    0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.note-planet:hover {
   transform: scale(1.05);
+  /* Managed by React */
+  box-shadow:
+    inset 0 0 30px rgba(255, 255, 255, 0.8),
+    0 15px 40px rgba(0, 0, 0, 0.1),
+    0 5px 15px rgba(59, 130, 246, 0.1);
+  border-color: #f0f9ff;
+  z-index: 30;
 }
 
-/* Compact minimap container */
-.stardust-minimap {
-  position: fixed;
-  top: 18px;
-  right: 18px;
-  width: 140px;
-  height: 140px;
+.dark .note-planet:hover {
+  box-shadow:
+    inset 0 0 30px rgba(255, 255, 255, 0.1),
+    0 15px 40px rgba(0, 0, 0, 0.2),
+    0 0 20px rgba(59, 130, 246, 0.2);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.planet-core {
+  position: absolute;
   border-radius: 50%;
-  /* Image shows circle. Snippet said 12px radius but referred to "Compact minimap". The user's previous prompts asked for CIRCULAR. I will force Circle. */
+  filter: blur(8px);
+  opacity: 0.6;
+  transition: all 0.5s ease;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.note-planet:hover .planet-core {
+  filter: blur(12px);
+  opacity: 0.8;
+  transform: scale(1.2);
+}
+
+/* Core Colors */
+.core-orange {
+  background: radial-gradient(circle, #fb923c 0%, transparent 70%);
+}
+
+.core-blue {
+  background: radial-gradient(circle, #60a5fa 0%, transparent 70%);
+}
+
+.core-green {
+  background: radial-gradient(circle, #4ade80 0%, transparent 70%);
+}
+
+.core-purple {
+  background: radial-gradient(circle, #a78bfa 0%, transparent 70%);
+}
+
+.core-red {
+  background: radial-gradient(circle, #f87171 0%, transparent 70%);
+}
+
+.core-default {
+  background: radial-gradient(circle, #94a3b8 0%, transparent 70%);
+}
+
+
+/* UI Elements */
+.singularity-btn {
+  position: relative;
+  background: #18181b;
+  /* Zinc 900 */
+  border-radius: 50%;
   overflow: hidden;
-  z-index: 60;
-  background: var(--ui-pill-bg);
-  border: 1px solid var(--ui-pill-border);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
 }
 
-/* Helper classes */
-.no-effects {
-  filter: none !important;
-  box-shadow: none !important;
+.dark .singularity-btn {
+  background: #000;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
 }
 
-.scale-real {
-  transform: scale(1);
+.singularity-btn::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.8);
+  opacity: 0;
+  transition: all 0.3s ease;
+  transform: scale(0.8);
 }
 
-.scale-compact {
-  transform: scale(0.65);
+.dark .singularity-btn::before {
+  border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
-html,
-body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
+.singularity-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+}
+
+.dark .singularity-btn:hover {
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+}
+
+.singularity-btn:hover::before {
+  opacity: 1;
+  transform: scale(1.4);
+}
+
+/* Slider */
+.priority-slider-track {
+  width: 4px;
   height: 100%;
-  overflow: hidden;
-  background-color: var(--color-void);
-  font-family: 'Inter', sans-serif;
-  color: #e2e8f0;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 2px;
+  position: relative;
 }
 
-#root {
+.dark .priority-slider-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.priority-slider-fill {
+  position: absolute;
+  bottom: 0;
   width: 100%;
-  height: 100%;
+  background: #18181b;
+  border-radius: 2px;
 }
 
-::-webkit-scrollbar-track {
-  background: #0a0a12;
+.dark .priority-slider-fill {
+  background: #f1f5f9;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #374151;
-  border-radius: 4px;
+.priority-slider-thumb {
+  width: 14px;
+  height: 14px;
+  background: white;
+  border: 2px solid #18181b;
+  border-radius: 50%;
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 50%);
+  cursor: grab;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #4b5563;
+.dark .priority-slider-thumb {
+  background: #0f172a;
+  border: 2px solid #f1f5f9;
 }
 
-/* Utility to hide scrollbar but allow scrolling */
-.no-scrollbar {
-  -ms-overflow-style: none;
-  /* IE and Edge */
-  scrollbar-width: none;
-  /* Firefox */
-}
-
+/* Utility */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 
-/* Custom sleek scrollbar for panels */
-.custom-scrollbar::-webkit-scrollbar {
+/* --- MATRIX MODE (Quad Grid) --- */
+.glass-orb {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(242, 127, 13, 0.2);
+  box-shadow: 0 0 20px rgba(242, 127, 13, 0.05), inset 0 0 15px rgba(242, 127, 13, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.dark .glass-orb {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.starlight-divider {
+  background: linear-gradient(90deg, transparent, rgba(242, 127, 13, 0.4), transparent);
+}
+
+.starlight-divider-v {
+  background: linear-gradient(180deg, transparent, rgba(242, 127, 13, 0.4), transparent);
+}
+
+/* --- TIMELINE MODE (Chronos) --- */
+.time-axis-main {
+  background: linear-gradient(90deg, transparent 0%, #00f2ff 50%, transparent 100%);
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+}
+
+.data-stream-lane {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.01) 50%, transparent);
+}
+
+.scanning-line {
+  background: linear-gradient(to right, transparent, #ff4d4d, transparent);
+  box-shadow: 0 0 10px #ff4d4d;
+}
+
+/* --- PRISM MODE (Gravity Columns) --- */
+.gravity-well {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.4) 100%);
+}
+
+.dark .gravity-well {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.05) 100%);
+}
+
+/* --- LINKING (Void) --- */
+.conduit {
+  stroke: rgba(99, 102, 241, 0.4);
+  stroke-width: 1.5;
+  fill: none;
+  filter: drop-shadow(0 0 2px rgba(99, 102, 241, 0.3));
+}
+
+.dark .conduit {
+  stroke: rgba(99, 102, 241, 0.6);
+}
+
+.port {
   width: 6px;
   height: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 99px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
-}
-
-/* Text Effects */
-.font-effect-cosmic {
-  background: linear-gradient(to right, #c084fc, #6366f1);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.stardust-minimap {
-  position: absolute;
-  bottom: 24px;
-  right: 24px;
-  width: 140px;
-  height: 140px;
   border-radius: 50%;
-  background: radial-gradient(circle at center, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.5);
-  overflow: hidden;
-  z-index: 50;
-  -webkit-backdrop-filter: blur(5px);
-  backdrop-filter: blur(5px);
-}
-
-.font-effect-glitter-gold {
-  background: linear-gradient(to right, #fcd34d, #b45309, #fcd34d);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: shine 3s linear infinite;
-}
-
-@keyframes shine {
-  to {
-    background-position: 200% center;
-  }
-}
-
-/* Note Styles */
-.note-planet {
-  border-radius: 9999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
+  background-color: #818cf8;
+  /* indigo-400 */
   position: absolute;
-  transition: box-shadow 0.3s ease;
-  overflow: visible;
-  /* Allow rings/glows to spill out */
-  pointer-events: auto;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 6px rgba(99, 102, 241, 0.8);
 }
 
-.note-planet:focus-within {
-  outline: none;
-  z-index: 50;
+/* --- GLOW UTILITIES --- */
+.glow-primary {
+  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
 }
 
-/* Extracted Note Content Styles */
-.note-input {
-  font-size: calc(var(--planet-size) / 10);
-  background: transparent;
-  border: none;
-  outline: none;
-  min-width: 50%;
-  caret-color: white;
-  -webkit-user-select: none;
-  user-select: none;
-  cursor: pointer;
-  color: inherit;
-  font-family: inherit;
-  text-align: center;
+.glow-pink {
+  filter: drop-shadow(0 0 15px rgba(244, 114, 182, 0.6));
 }
 
-.note-input.editing {
-  -webkit-user-select: text;
-  user-select: text;
-  cursor: text;
+.glow-blue {
+  filter: drop-shadow(0 0 15px rgba(96, 165, 250, 0.6));
 }
 
-.note-input.selected {
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+.glow-yellow {
+  filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.6));
 }
 
-.note-content {
-  /* removed 70% width/height to fix centering offset */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  outline: none;
-  z-index: 10;
-  font-family: inherit;
+.glow-green {
+  filter: drop-shadow(0 0 15px rgba(52, 211, 153, 0.6));
 }
 
-/* Specific Shapes */
-.shape-asteroid {
-  clip-path: polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%);
-  border-radius: 0;
-}
-
-.shape-nebula {
-  filter: blur(40px);
+.animate-spin-slow {
   animation: spin 120s linear infinite;
-}
-
-/* Saturn Ring */
-.saturn-ring {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 160%;
-  height: 160%;
-  border: 40px solid rgba(217, 119, 6, 0.3);
-  border-radius: 50%;
-  transform: translate(-50%, -50%) rotateX(75deg);
-  pointer-events: none;
-  box-shadow: 0 0 20px rgba(217, 119, 6, 0.2);
-}
-
-/* Black Hole Animation */
-.black-hole-enter {
-  animation: black-hole-suck 0.8s ease-in forwards;
-}
-
-@keyframes black-hole-suck {
-  0% {
-    transform: scale(1) rotate(0deg);
-    opacity: 1;
-  }
-
-  100% {
-    transform: scale(0) rotate(720deg);
-    opacity: 0;
-  }
-}
-
-/* Dynamic Positioning Utilities */
-.viewport-transform {
-  transform: translate(var(--vx), var(--vy)) scale(var(--vzoom));
-}
-
-.creation-menu-container {
-  left: var(--x);
-  top: var(--y);
-}
-
-.creation-menu-item {
-  background-color: var(--bg-color);
-  margin-left: -24px;
-  margin-top: -24px;
-}
-
-.planet-note-dynamic {
-  left: var(--x);
-  top: var(--y);
-  width: var(--w);
-  height: var(--h);
-  font-size: var(--fs);
-  color: #fff;
-  cursor: var(--cursor);
-  touch-action: none;
-}
-
-.note-content-dynamic {
-  pointer-events: var(--pe);
-  font-family: inherit;
-}
-
-.handle-base {
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  background-color: #fff;
-  border-radius: 50%;
-  cursor: crosshair;
-  z-index: 60;
-}
-
-.handle-top {
-  top: -6px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.handle-right {
-  top: 50%;
-  right: -6px;
-  transform: translateY(-50%);
-}
-
-.handle-bottom {
-  bottom: -6px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.handle-left {
-  top: 50%;
-  left: -6px;
-  transform: translateY(-50%);
-}
-
-/* Planet Sizes */
-.planet-sun {
-  width: 800px;
-  height: 800px;
-  font-size: 40px;
-}
-
-.planet-mercury {
-  width: 200px;
-  height: 200px;
-  font-size: 14px;
-}
-
-.planet-venus {
-  width: 380px;
-  height: 380px;
-  font-size: 18px;
-}
-
-.planet-earth {
-  width: 400px;
-  height: 400px;
-  font-size: 20px;
-}
-
-.planet-mars {
-  width: 340px;
-  height: 340px;
-  font-size: 16px;
-}
-
-.planet-jupiter {
-  width: 700px;
-  height: 700px;
-  font-size: 35px;
-}
-
-.planet-saturn {
-  width: 600px;
-  height: 600px;
-  font-size: 30px;
-}
-
-.planet-uranus {
-  width: 400px;
-  height: 400px;
-  font-size: 20px;
-}
-
-.planet-neptune {
-  width: 380px;
-  height: 380px;
-  font-size: 18px;
-}
-
-.planet-pluto {
-  width: 150px;
-  height: 150px;
-  font-size: 12px;
-}
-
-.planet-asteroid {
-  width: 180px;
-  height: 180px;
-  font-size: 12px;
-}
-
-.planet-nebula {
-  width: 1600px;
-  height: 1600px;
-  font-size: 60px;
-}
-
-.planet-black-hole {
-  width: 500px;
-  height: 500px;
-  font-size: 24px;
-}
-
-.planet-galaxy {
-  width: 1200px;
-  height: 1200px;
-  font-size: 50px;
-}
-
-/* -------------------------------------------------------------------------- */
-/* PART 2: PRO MODE VISUAL ENHANCEMENTS */
-
-
-.planet-sun-pro {
-  background: radial-gradient(circle at 30% 30%, #fef08a, #facc15, #b45309);
-  box-shadow: 0 0 60px #facc15, inset 0 0 40px rgba(255, 255, 255, 0.5);
-}
-
-.planet-jupiter-pro {
-  background: radial-gradient(circle at 30% 30%, #ffedd5, #fdba74, #ea580c);
-  /* Striped look via gradient not easy here, settling for rich gradient */
-  box-shadow: 0 0 40px #fdba74, inset -20px -20px 60px rgba(0, 0, 0, 0.5);
-}
-
-.planet-earth-pro {
-  background: radial-gradient(circle at 40% 40%, #7dd3fc, #0284c7, #0c4a6e);
-  box-shadow: 0 0 30px #38bdf8, inset -10px -10px 30px rgba(0, 0, 0, 0.6);
-}
-
-.planet-mars-pro {
-  background: radial-gradient(circle at 40% 40%, #fda4af, #f43f5e, #881337);
-  box-shadow: 0 0 25px #f43f5e, inset -8px -8px 20px rgba(0, 0, 0, 0.6);
-}
-
-.planet-saturn-pro {
-  background: radial-gradient(circle at center, #fef3c7, #d97706);
-  box-shadow: 0 0 30px #fbbf24;
-}
-
-.planet-asteroid-pro {
-  box-shadow: inset -5px -5px 10px rgba(0, 0, 0, 0.7);
-}
-
-/* Toolbar Skins */
-.skin-glass {
-  --ui-pill-bg: rgba(255, 255, 255, 0.1);
-  --ui-pill-border: rgba(255, 255, 255, 0.2);
-  --color-text: #fff;
 }

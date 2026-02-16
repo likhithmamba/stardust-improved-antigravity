@@ -59,13 +59,57 @@ export class PhysicsSystem {
                     addForce(note.id, dx * strength, dy * strength);
                 }
             }
+
+            // --- USER REQUEST: COGNITIVE PIPELINE PHYSICS ---
+
+            // 1. VOID MODE: Brownian Drift (Chaos Engine)
+            // "In Void mode, nodes should float (drift)... If you can’t be bothered to drag it, let it drift away."
+            if (this.world.mode === 'void' && !note.fixed) {
+                const BR_STRENGTH = 0.05; // Gentle drift
+                const angle = Math.random() * Math.PI * 2;
+                addForce(note.id, Math.cos(angle) * BR_STRENGTH, Math.sin(angle) * BR_STRENGTH);
+            }
+
+
+            // 2. MATRIX MODE: Resistance (Decision Engine)
+            // "Drag a node from 'Starlight' to 'Solar Core'. It should feel heavy to move it there."
+            if (this.world.mode === 'matrix') {
+                // Ensure we have center
+                const cx = this.world.camera.x;
+                const cy = this.world.camera.y;
+
+                // Solar Core is Top-Left Quadrant relative to center
+                const inSolarCore = note.x < cx && note.y < cy;
+
+                if (inSolarCore) {
+                    // Apply resistance! A force pushing OUT from the center of the quadrant
+                    const qCx = cx - 300; // Approx center of quadrant
+                    const qCy = cy - 300;
+                    const dx = note.x - qCx;
+                    const dy = note.y - qCy;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 400) { // Field of resistance
+                        // Push away
+                        const RESISTANCE = 200 / (dist + 1);
+                        addForce(note.id, (dx / dist) * RESISTANCE, (dy / dist) * RESISTANCE);
+                    }
+                }
+            }
         });
 
         // 2. Link Forces (Springs)
         // Only if NOT free mode (per original spec: Free Mode links are visual only)
-        if (this.world.mode !== 'free') {
-            const LINK_STRENGTH = 0.05;
+        // UPDATE: User wants "Gravitational Drag" in Orbital Mode.
+        const effectiveMode = this.world.mode;
+        if (effectiveMode !== 'free') {
+            let LINK_STRENGTH = 0.05;
             const LINK_DISTANCE = 300;
+
+            // "Gravitational Drag: An expert uses Orbit to visualize dependency."
+            if (effectiveMode === 'orbital') {
+                LINK_STRENGTH = 0.15; // Stronger bonds in Orbit
+            }
 
             this.world.connections.forEach(conn => {
                 const source = this.world.notes.get(conn.from);

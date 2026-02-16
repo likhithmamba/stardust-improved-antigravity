@@ -1,100 +1,138 @@
 # ✨ Stardust Canvas
 
-**Where your thoughts orbit freely.**
+**A Particle Accelerator for Ideas.**
 
-Stardust Canvas is an infinite, cosmic-themed spatial note-taking application. It replaces the linear document with a living universe of ideas, where notes are celestial bodies, connections are gravitational tethers, and your creativity knows no bounds.
+Stardust Canvas is an infinite, physics-based spatial note-taking engine designed to transform how you capture, organize, and explore your thoughts. Unlike traditional linear document editors, Stardust treats every note as a celestial body with mass, gravity, and velocity, creating a living universe of information.
 
-![Stardust Preview](https://via.placeholder.com/800x450?text=Stardust+Canvas+Preview)
+![Stardust Preview](https://via.placeholder.com/1200x600?text=Stardust+Canvas+Preview)
 
-## 🌌 Features
+---
 
-### 🔭 The Infinite Cosmos
-*   **Spatial Canvas**: Pan, zoom, and explore an endless starfield.
-*   **Celestial Nodes**: Create notes as **Planets**, **Suns**, **Asteroids**, and **Nebulae**. Each type varies in size and gravitational significance.
-*   **Gravity & Physics**: Notes float and interact. Fling them across the void or watch them settle into orbits.
-*   **Wormhole Navigation**: Double-click to "warp" focus to specific ideas.
-*   **Soundscapes**: Generative ambient layout sounds react to your interactions (clicks, warps, connections).
+## 🌌 The Vision
 
-### ✍️ Rich Note Taking
-*   **Powerful Editor**: Built on **Lexical**, supporting **Markdown**, **Code Blocks**, **Lists**, and **Rich Text**.
-*   **Smart Intelligence**:
-    *   **AI Spark**: Integrated with **Google Gemini 1.5 Flash** to expand ideas, summarize text, or generate content (BYO API Key).
-    *   **Mood Coloring**: Automatic color assignment based on content keywords (e.g., "urgent" turns red, "idea" turns blue).
+We believe that ideas are not static text on a page—they are dynamic, interconnected entities. Stardust provides a **Dual Design System** to cater to different cognitive states:
 
-### 🛠️ Advanced Tools
-*   **Semantic Zoom**: Content detail adjusts based on your zoom level—see titles from afar, full content up close.
-*   **Minimap**: A radar view of your entire galaxy of notes.
-*   **Black Hole Deletion**: Drag unwanted notes into the singularity to destroy them.
-*   **Local-First Privacy**: All data orbits locally in your browser using **IndexedDB** (via Dexie.js).
+### 1. Solar Strategy (The "Day" Mode)
+*   **Philosophy**: Clarity, Structure, Execution.
+*   **Visuals**: Clean lines, high contrast, warm solar gradients, glassmorphic panels.
+*   **Use Case**: Project management, outlining, structured planning.
+
+### 2. Zero-Point (The "Night" Mode)
+*   **Philosophy**: Creativity, Exploration, Flow.
+*   **Visuals**: Deep space backgrounds, neon accents, glowing particles, holographic UI.
+*   **Use Case**: Brainstorming, connecting disparate ideas, dream journaling.
+
+---
+
+## 🔭 The 5 Dimensional Modes
+
+Stardust offers five distinct ways to view and interact with your data, seamlessly switchable at any time:
+
+### 1. 🌀 Void Mode (Freeform)
+The default state. An infinite canvas where notes float freely.
+*   **Physics**: Notes have gravity and repel each other slightly to avoid overlap.
+*   **Interaction**: Fling notes to send them drifting; they will naturally cluster based on connections.
+
+### 2. 🔢 Matrix Mode (Structured Grid)
+A rigid, tabular organization of your chaos.
+*   **Layout**: forces notes into a clean grid based on tags or priority.
+*   **Best For**: Triage, inventorying ideas, and ensuring nothing is lost in the void.
+
+### 3. 🌈 Prism Mode (Knowledge Graph)
+A network-focused view emphasizing connections.
+*   **Layout**: Force-directed graph where edge strength determines proximity.
+*   **Best For**: Visualizing complex relationships, mind mapping, and finding hidden patterns.
+
+### 4. 🪐 Orbital Mode (Priority Rings)
+A concentric system revolving around you.
+*   **Layout**: Important/High-priority notes orbit closer to the center (the "Core"). Lower priority notes drift in the outer rim.
+*   **Best For**: Daily focus, prioritizing tasks, and "Radar" view of your life.
+
+### 5. ⏳ Timeline Mode (Chronological)
+A linear projection of time.
+*   **Layout**: Notes are distributed along a horizontal or vertical axis based on creation or modification date.
+*   **Best For**: Project histories, journaling, and understanding the evolution of your thoughts.
+
+---
+
+## ⚛️ Core Mechanics
+
+### 🚀 Infinite Canvas & Semantic Zoom
+*   **Zoom Out**: See the galaxy. Notes fade into simple stars.
+*   **Zoom In**: detailed content reveals itself.
+*   **Smooth Pan**: infinite panning in any direction.
+
+### 🍎 Physics Engine
+*   **Gravity**: Larger notes (more content) attract smaller related notes.
+*   **Decay**: (Optional) Unvisited notes slowly lose "light" and drift to the archives, mimicking natural memory fading.
+*   **Collision**: Notes bounce and interact, giving a tactile feel to your data.
+
+### 🕳️ The Black Hole
+*   **Deletion**: There is no trash can. To delete a note, you must physically drag it into the event horizon of the Black Hole in the corner. Watch it get spaghettified and consumed.
+
+### 🧠 AI Spark (Gemini 1.5)
+Inside every note is an AI core.
+*   **Expand**: Turn a bullet point into a paragraph.
+*   **Summarize**: Collapse a wall of text into a haiku.
+*   **Connect**: Ask the AI to find relationships between two distant notes.
+
+---
+
+## 🛠️ Technological Event Horizon
+
+Stardust is built on the bleeding edge of web technologies to ensure 60FPS performance even with thousands of active physics bodies.
+
+### Core Stack
+*   **Frontend Framework**: [React 19](https://react.dev/) (Leveraging latest concurrent features)
+*   **Build Tool**: [Vite](https://vitejs.dev/) (Instant HMR)
+*   **Language**: [TypeScript](https://www.typescriptlang.org/) (Strict type safety)
+
+### Visuals & Physics
+*   **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) (Utility-first, high performance)
+*   **Animations**: [Framer Motion](https://www.framer.com/motion/) (Complex UI transitions)
+*   **Physics Loop**: Custom `requestAnimationFrame` engine detached from React render cycle for maximum smoothness.
+
+### State & Data
+*   **State Management**: [Zustand](https://zustand-demo.pmnd.rs/) + [Immer](https://immerjs.github.io/immer/) (Transient updates for high-frequency physics)
+*   **Persistence**: [Dexie.js](https://dexie.org/) (IndexedDB wrapper for offline-first, local-only storage)
+*   **Rich Text**: [Lexical](https://lexical.dev/) (Facebook's extensible text editor framework)
+
+---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-*   Node.js (v18+)
+*   Node.js v18+
 *   npm or yarn
 
 ### Installation
 
-1.  **Clone the Universe**
+1.  **Clone the Repository**
     ```bash
     git clone https://github.com/yourusername/stardust-canvas.git
     cd stardust-canvas
     ```
 
-2.  **Install Life Support (Dependencies)**
+2.  **Install Dependencies**
     ```bash
     npm install
     ```
 
-3.  **Launch Mission Control (Dev Server)**
+3.  **Run Development Server**
     ```bash
     npm run dev
     ```
-    Open `http://localhost:5173` to begin exploration.
+    Access the universe at `http://localhost:5173`
 
-4.  **Build for Deep Space (Production)**
+4.  **Build for Production**
     ```bash
     npm run build
     ```
 
-### 🧠 Configuring AI
-To use the "Spark" AI features:
-1.  Open the **Settings** panel in the app.
-2.  Enter your **Google Gemini API Key**.
-3.  Your key is stored locally in your browser (obfuscated).
-
-## 🎮 How to Use
-
-*   **Spawn**: Double-click anywhere in empty space to open the **Creation Menu**. Pick a celestial body.
-*   **Edit**: Click a planet to focus; click again to edit text. Use the overlay editor for rich text.
-*   **Link**: Drag from the "handle" (dot) on a selected planet to another to create a gravitational tether.
-*   **Physics**: Drag a planet to move it. Fling it to see it drift.
-*   **Delete**: Drag a planet to the **Black Hole** (bottom-right) until it is consumed.
-
-## 🏗️ Cosmic Architecture (Developer Guide)
-
-Stardust Canvas uses a hybrid architecture to maintain 60fps performance even with complex simulations.
-
-### The Engine (`src/engine`)
-*   **Game Loop**: A custom `requestAnimationFrame` loop manages physics and rendering separate from React's render cycle.
-*   **Visual Registry**: Direct DOM manipulation updates note positions/transforms, bypassing React reconciliation for smooth dragging and physics.
-*   **ECS-Lite**: Systems like `PhysicsSystem`, `LayoutSystem`, and `SingularitySystem` operate on the world state each frame.
-
-### The Bridge
-*   **Zustand**: Manages high-level application state (notes content, selection, user preferences).
-*   **React**: Renders the UI shell, overlays, and the initial DOM elements for notes.
-*   **Synchronization**: The Engine reads from the Store/World state but writes position updates directly to the DOM.
-
-### Tech Stack
-*   **Core**: [React 19](https://react.dev/), [Vite](https://vitejs.dev/), [TypeScript](https://www.typescriptlang.org/)
-*   **State**: [Zustand](https://zustand-demo.pmnd.rs/), [Immer](https://immerjs.github.io/immer/)
-*   **Editor**: [Lexical](https://lexical.dev/) (Markdown, History, Rich Text)
-*   **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
-*   **Motion**: [Framer Motion](https://www.framer.com/motion/) (UI Animations), [Use-Gesture](https://use-gesture.netlify.app/)
-*   **Persistence**: [Dexie.js](https://dexie.org/) (IndexedDB wrapper)
-*   **AI**: [Google Gemini API](https://ai.google.dev/)
-*   **Utils**: [uuid](https://github.com/uuidjs/uuid), [fuse.js](https://fusejs.io/) (Search)
+---
 
 ## 📄 License
 
-MIT License. The universe is open for everyone.
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+*"We are all made of starstuff."*

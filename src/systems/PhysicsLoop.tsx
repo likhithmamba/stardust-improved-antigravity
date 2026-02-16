@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { useStore } from '../store/useStore';
+import { useStore, type Note } from '../store/useStore';
 
 import { stepPhysics } from './PhysicsEngine';
 import { soundManager } from '../utils/sound';
@@ -11,7 +11,7 @@ export const PhysicsLoop: React.FC = () => {
     // We use a ref to track if loop is running to avoid react render cycle traps
     const requestRef = useRef<number | null>(null);
     const previousTimeRef = useRef<number | null>(null);
-    const simulationNotesRef = useRef<any[]>([]); // Local simulation state
+    const simulationNotesRef = useRef<Note[]>([]); // Local simulation state
 
     // Sync ref with store only when store updates (e.g. added note) but NOT when physics runs
     // effectively "forking" the state for the physics engine
@@ -74,12 +74,12 @@ export const PhysicsLoop: React.FC = () => {
             }
 
             // PERFORMANCE: Direct DOM Update via Registry
-            newNotes.forEach((note: any) => {
+            newNotes.forEach((note: Note) => {
                 visualRegistry.updatePosition(note.id, note.x, note.y);
             });
 
             // Optimization: basic kinetic energy check
-            const ke = newNotes.reduce((acc: number, n: any) => acc + Math.abs(n.vx || 0) + Math.abs(n.vy || 0), 0);
+            const ke = newNotes.reduce((acc: number, n: Note) => acc + Math.abs(n.vx || 0) + Math.abs(n.vy || 0), 0);
 
             // SYNC LOGIC:
             // Sync if events happened
