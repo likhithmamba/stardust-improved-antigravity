@@ -33,8 +33,8 @@ export const useEngine = () => {
             width: window.innerWidth,
             height: window.innerHeight,
             zoom: viewport.zoom,
-            x: (-viewport.x + window.innerWidth / 2) / viewport.zoom,
-            y: (-viewport.y + window.innerHeight / 2) / viewport.zoom,
+            x: (window.innerWidth / 2 - viewport.x) / viewport.zoom,
+            y: (window.innerHeight / 2 - viewport.y) / viewport.zoom,
         });
     }, [viewport]);
 

@@ -118,16 +118,7 @@ type State = {
     theme: 'default' | 'cyberpunk' | 'zen';
     setTheme: (theme: 'default' | 'cyberpunk' | 'zen') => void;
 
-    // Physics of Thought Engine State
-    viewMode: ViewMode;
-    transitionPhase: 'entering' | 'settling' | 'stable';
-    freePositions: Map<string, { x: number; y: number }>; // Persisted positions for Free mode
-    layoutVersion: number;
-
-    setViewMode: (mode: ViewMode) => void;
-    setTransitionPhase: (phase: 'entering' | 'settling' | 'stable') => void;
-
-    // File Persistence
+    // Persistence
     exportData?: () => Promise<void>;
     importData?: () => Promise<void>;
 };
@@ -251,48 +242,7 @@ export const useStore = create<State>((set, get) => ({
     theme: initialSettings.theme ?? 'default',
     setTheme: (theme) => set({ theme }),
 
-    // Physics Engine Defaults
-    viewMode: initialSettings.viewMode ?? 'free',
-    transitionPhase: 'stable',
-    freePositions: new Map(),
-    layoutVersion: 1,
-
-    // ------------------------------------------------------------
-    // PHYSICS OF THOUGHT ENGINE ACTIONS
-    // ------------------------------------------------------------
-    setViewMode: (mode) => {
-        const state = get();
-        const currentMode = state.viewMode;
-
-        // 1. If leaving FREE mode, snapshot current positions
-        if (currentMode === 'free') {
-            const snapshot = new Map<string, { x: number; y: number }>();
-            state.notes.forEach(n => {
-                snapshot.set(n.id, { x: n.x, y: n.y });
-            });
-            set({ freePositions: snapshot });
-        }
-
-        // 2. Set new mode and enter transition phase
-
-        // RESTORATION: Re-entering Free Mode? Restore accurate user layout.
-        if (mode === 'free' && state.freePositions.size > 0) {
-            const restoredNotes = state.notes.map(n => {
-                const saved = state.freePositions.get(n.id);
-                // Only restore if we have a saved position AND current mode wasn't already free
-                return saved ? { ...n, x: saved.x, y: saved.y, vx: 0, vy: 0, fixed: false } : n;
-            });
-            // Update notes first so renderer has positions before transition starts
-            set({ notes: restoredNotes });
-        }
-
-        set({
-            viewMode: mode,
-            transitionPhase: 'entering'
-        });
-    },
-
-    setTransitionPhase: (phase) => set({ transitionPhase: phase }),
+    // REMOVED Redundant ViewMode logic (moved to settingsStore)
 
     // ------------------------------------------------------------
     // LOCAL FILE SYSTEM API (Unlimited Storage)
@@ -494,8 +444,6 @@ useStore.subscribe((state) => {
         showInvoiceUniverse: state.showInvoiceUniverse,
         showAutoMap: state.showAutoMap,
         showFocusMode: state.showFocusMode,
-        // View Persistence
-        viewMode: state.viewMode
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(settings));
 });

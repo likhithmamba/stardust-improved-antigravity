@@ -21,6 +21,10 @@ export interface SettingsState {
         questMode: boolean;
     };
     setMode: (m: Mode) => void;
+    transitionPhase: 'entering' | 'settling' | 'stable';
+    freePositions: Map<string, { x: number; y: number }>;
+    layoutVersion: number;
+    setTransitionPhase: (phase: 'entering' | 'settling' | 'stable') => void;
 
     // Lens System (Ultra Mode)
     viewMode: ViewMode;
@@ -38,7 +42,7 @@ import type { ViewMode } from '../../constants';
 
 export const useSettingsStore = create<SettingsState>()(
     persist(
-        (set) => ({
+        (set, get) => ({
             mode: 'ultra', // Default to Ultra for Showcase
             showHierarchy: true,
             showLinks: true,
@@ -57,10 +61,38 @@ export const useSettingsStore = create<SettingsState>()(
             },
             viewMode: 'void',
             designSystem: 'zero-point',
+            transitionPhase: 'stable',
+            freePositions: new Map(),
+            layoutVersion: 1,
             setViewMode: (v) => {
-                set({ viewMode: v as ViewMode });
-                useStore.getState().setViewMode(v as ViewMode);
+                const state = get();
+                const currentMode = state.viewMode;
+                const viewStore = useStore.getState();
+
+                // 1. If leaving FREE mode, snapshot current positions in useStore
+                if (currentMode === 'free') {
+                    const snapshot = new Map<string, { x: number; y: number }>();
+                    viewStore.notes.forEach(n => {
+                        snapshot.set(n.id, { x: n.x, y: n.y });
+                    });
+                    set({ freePositions: snapshot });
+                }
+
+                // 2. Set new mode and enter transition phase
+                if (v === 'free' && state.freePositions.size > 0) {
+                    const restoredNotes = viewStore.notes.map(n => {
+                        const saved = state.freePositions.get(n.id);
+                        return saved ? { ...n, x: saved.x, y: saved.y, vx: 0, vy: 0, fixed: false } : n;
+                    });
+                    viewStore.setNotes(restoredNotes);
+                }
+
+                set({
+                    viewMode: v as ViewMode,
+                    transitionPhase: 'entering'
+                });
             },
+            setTransitionPhase: (phase) => set({ transitionPhase: phase }),
             setDesignSystem: (ds) => set({ designSystem: ds }),
             setMode: (m: Mode) => {
                 set((state) => {
