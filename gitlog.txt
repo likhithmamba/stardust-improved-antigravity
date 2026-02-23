@@ -1,0 +1,58 @@
+On branch stardust-improved-2.0
+Your branch is up to date with 'origin/stardust-improved-2.0'.
+
+Last commands done (2 commands done):
+   pick 3e07627 Initial commit of Stardust project
+   pick a41c320 feat: Integrate cognitive engines with UI layout strategies
+No commands remaining.
+You are currently rebasing branch 'stardust-improved-2.0' on '72d0dec'.
+  (fix conflicts and then run "git rebase --continue")
+  (use "git rebase --skip" to skip this patch)
+  (use "git rebase --abort" to check out the original branch)
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	new file:   src/systems/PhysicsEngine.ts
+	new file:   src/systems/PhysicsLoop.tsx
+	new file:   src/ui/landing/LandingFooter.tsx
+	new file:   src/ui/landing/LandingPage.tsx
+
+Unmerged paths:
+  (use "git restore --staged <file>..." to unstage)
+  (use "git add <file>..." to mark resolution)
+	both added:      README.md
+	both modified:   index.html
+	both modified:   package-lock.json
+	both modified:   package.json
+	both modified:   src/App.tsx
+	both modified:   src/components/CanvasViewport.tsx
+	both modified:   src/components/MiniMap.tsx
+	both modified:   src/components/PlanetNote.tsx
+	both modified:   src/components/SettingsPanel.tsx
+	both added:      src/components/StardustLogo.tsx
+	both modified:   src/constants.ts
+	both added:      src/engine/Engine.ts
+	both added:      src/engine/World.ts
+	both added:      src/engine/physics/PhysicsSystem.ts
+	both added:      src/engine/types/EngineTypes.ts
+	both added:      src/hooks/useEngine.ts
+	both modified:   src/index.css
+	both modified:   src/store/useStore.ts
+	both added:      src/systems/ViewConstraints.ts
+	both added:      src/ui/landing/ComparisonSection.tsx
+	both added:      src/ui/landing/FeatureDeepDive.tsx
+	both added:      src/ui/landing/HeroSection.tsx
+	both added:      src/ui/landing/RoadmapSection.tsx
+	both added:      src/ui/landing/index.ts
+	both added:      src/ui/settings/settingsStore.ts
+	both modified:   src/utils/ai.ts
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	gitlog.txt
+
+  improved-stardust
+  master
+* stardust-improved-2.0
+origin	https://github.com/likhithmamba/stardust-googlestudio.ai.git (fetch)
+origin	https://github.com/likhithmamba/stardust-googlestudio.ai.git (push)
