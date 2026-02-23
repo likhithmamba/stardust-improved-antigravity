@@ -1,13 +1,16 @@
 import React, { useRef, useState } from 'react';
 import { useGesture } from '@use-gesture/react';
 import { useStore, type Note } from '../store/useStore';
-import { NOTE_STYLES, NoteType, type ViewMode } from '../constants';
+import { NOTE_STYLES, NoteType, REAL_SIZES, type ViewMode } from '../constants';
 import { ViewConstraints } from '../systems/ViewConstraints';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
 import { analyzeContent } from '../utils/intelligence';
 import { visualRegistry } from '../engine/render/VisualRegistry';
 import { useZoomLOD, type ZoomLOD } from '../hooks/useZoomLOD';
+import { useSettingsStore } from '../ui/settings/settingsStore';
+import { planetExpander } from '../utils/ai';
+import { Sparkles } from 'lucide-react';
 
 
 interface PlanetNoteProps {
@@ -34,9 +37,13 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
     const updateNote = useStore((state) => state.updateNote);
     const setSelectedId = useStore((state) => state.setSelectedId);
 
+    // Migrated: UI Toggles & Modes from SettingsStore
+    const designSystem = useSettingsStore((state) => state.designSystem);
+    const mode = useSettingsStore((state) => state.mode);
+
     // Pro/Ultra Checks
-    const proMode = useStore((state) => state.proMode);
-    const ultraMode = useStore((state) => state.ultraMode);
+    const proMode = mode === 'pro' || mode === 'ultra';
+    const ultraMode = mode === 'ultra';
     const isEnhanced = proMode || ultraMode;
 
     const focusModeId = useStore((state) => state.focusModeId);
@@ -103,22 +110,17 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
     // Compute Size — use original NOTE_STYLES sizes (known working)
     let size = style.width;
 
-    // Enhanced sizes in pro/ultra free mode
-    if (isEnhanced && viewMode === 'free') {
-        if (note.type === NoteType.Nebula) size = 1600;
-        else if (note.type === NoteType.Galaxy) size = 1200;
-        else if (note.type === NoteType.Sun) size = 800;
-        else if (note.type === NoteType.Jupiter) size = 700;
-        else if (note.type === NoteType.Saturn) size = 600;
-        else if (note.type === NoteType.Earth) size = 400;
-        else if (note.type === NoteType.Mars) size = 340;
-        else if (note.type === NoteType.Asteroid || note.type === NoteType.Comet) size = 180;
+    // Phase 3: calculateNoteSize logic
+    if (viewMode === 'free') {
+        size = REAL_SIZES[note.type] || size;
     }
 
-    // LOD: Only affects text visibility — never size (to avoid layout breakage)
-    const showText = true; // Always show text — LOD text gating was too aggressive
-    const showContent = lod === 'surface' || lod === 'planet';
-    const showAsMinimalDot = false; // Disabled — was rendering notes as tiny invisible dots
+    // LOD Logic
+    const showText = lod === 'surface' || lod === 'planet';
+    const showContent = lod === 'surface';
+    const showAsMinimalDot = lod === 'galaxy';
+    const tier = [NoteType.Sun, NoteType.Galaxy, NoteType.Nebula, NoteType.Jupiter, NoteType.Saturn].includes(effectiveType as any) ? 1 : 2;
+    const isMajor = tier === 1;
 
     const bind = useGesture({
         onDragStart: ({ event }) => {
@@ -287,7 +289,7 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
     // This wrapper is controlled by VisualRegistry and completely ignored by React reconciliation
     // regarding the 'transform' style, because we don't set 'style' prop on it (except initial).
 
-    // LOD: At galaxy/system zoom levels, render a minimal dot instead of the full planet
+    // LOD: At galaxy zoom level, render a minimal dot
     if (showAsMinimalDot) {
         return (
             <div
@@ -297,11 +299,11 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
             >
                 <div
                     style={{
-                        width: size,
-                        height: size,
+                        width: size * 0.2, // Tiny dot
+                        height: size * 0.2,
                         borderRadius: '50%',
                         background: note.color || visualColor || baseStyle.color || '#6366f1',
-                        opacity: 0.8,
+                        boxShadow: `0 0 10px ${note.color || visualColor || baseStyle.color || '#6366f1'}`,
                     }}
                 />
             </div>
@@ -344,7 +346,7 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
                         boxShadow: '0 0 20px -5px var(--mode-accent, transparent)'
                     }),
                     // We DO NOT set transform here. It is handled by the parent wrapper via Engine.
-                } as React.CSSProperties}
+                } as any}
                 layoutId={`note-${note.id}`}
                 initial={false}
                 animate={{
@@ -363,6 +365,10 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
                     opacity: { duration: 0.3 }
                 }}
             >
+                {/* Simplified geometry for non-surface LOD */}
+                {lod !== 'surface' && !isMajor && (
+                    <div className="absolute inset-0 rounded-full bg-inherit" />
+                )}
                 {/* UNIFIED RENDERER: Always use Premium Glassmorphism */}
                 {isEnhanced && (
                     <div className="absolute inset-0 pointer-events-none overflow-visible">
@@ -417,6 +423,31 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
                 >
                     {showText && (note.title || style.label)}
                 </div>
+
+                {/* AI Expand Button (Visible only when editing) */}
+                {isEditing && (
+                    <motion.button
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        onClick={async (e) => {
+                            e.stopPropagation();
+                            if (!note.title) return;
+                            window.dispatchEvent(new CustomEvent('stardust:toast', { detail: { message: 'Expanding thought...', type: 'info' } }));
+                            try {
+                                const expanded = await planetExpander(note.title, note.content || '');
+                                updateNote(note.id, { title: expanded });
+                                if (contentRef.current) contentRef.current.innerText = expanded;
+                                setIsEditing(false);
+                            } catch (err: any) {
+                                window.dispatchEvent(new CustomEvent('stardust:toast', { detail: { message: err.message, type: 'info' } }));
+                            }
+                        }}
+                        className="absolute -top-10 right-0 p-2 rounded-full glass-panel border-purple-500/50 text-purple-400 hover:scale-110 transition-transform z-50 pointer-events-auto"
+                        title="AI Expand (Planet Expander)"
+                    >
+                        <Sparkles size={16} />
+                    </motion.button>
+                )}
 
                 {/* Shared Selection Ring */}
                 {isSelected && (

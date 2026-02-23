@@ -5,6 +5,7 @@ import { useSettingsStore } from '../ui/settings/settingsStore';
 import { useStore } from '../store/useStore';
 import { SettingsPanel } from './SettingsPanel';
 import type { ViewMode } from '../constants';
+import { stellarSynthesis, constellationMapper } from '../utils/ai';
 
 // ─── Stitch-Inspired Unified UI Shell ────────────────────────────────
 
@@ -115,6 +116,50 @@ export const AppShell: React.FC = () => {
 
                 {/* Right: Actions */}
                 <div className="flex items-center gap-1">
+                    {/* Synthesis */}
+                    <button
+                        onClick={async () => {
+                            const notes = useStore.getState().notes.map(n => ({ title: n.title || '', type: n.type }));
+                            if (notes.length === 0) return;
+                            window.dispatchEvent(new CustomEvent('stardust:toast', { detail: { message: 'Synthesizing knowledge...', type: 'info' } }));
+                            try {
+                                const result = await stellarSynthesis(notes);
+                                window.dispatchEvent(new CustomEvent('stardust:toast', { detail: { message: result, type: 'ultra' } }));
+                            } catch (error: any) {
+                                window.dispatchEvent(new CustomEvent('stardust:toast', { detail: { message: error.message, type: 'info' } }));
+                            }
+                        }}
+                        className={clsx(
+                            'w-8 h-8 rounded-full flex items-center justify-center transition-all',
+                            p.textMute, p.hover
+                        )}
+                        title="Stellar Synthesis (Summarize)"
+                    >
+                        <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
+                    </button>
+
+                    {/* Auto-Map */}
+                    <button
+                        onClick={async () => {
+                            const notes = useStore.getState().notes.map(n => ({ title: n.title || '', type: n.type }));
+                            if (notes.length === 0) return;
+                            window.dispatchEvent(new CustomEvent('stardust:toast', { detail: { message: 'Mapping constellation...', type: 'info' } }));
+                            try {
+                                const result = await constellationMapper(notes);
+                                window.dispatchEvent(new CustomEvent('stardust:toast', { detail: { message: result, type: 'ultra' } }));
+                            } catch (error: any) {
+                                window.dispatchEvent(new CustomEvent('stardust:toast', { detail: { message: error.message, type: 'info' } }));
+                            }
+                        }}
+                        className={clsx(
+                            'w-8 h-8 rounded-full flex items-center justify-center transition-all',
+                            p.textMute, p.hover
+                        )}
+                        title="Constellation Mapper (Auto-Map)"
+                    >
+                        <span className="material-symbols-outlined text-[18px]">account_tree</span>
+                    </button>
+
                     {/* Search */}
                     <button
                         onClick={() => setSearchOpen(!isSearchOpen)}

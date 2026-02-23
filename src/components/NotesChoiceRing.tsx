@@ -15,36 +15,34 @@ interface NotesChoiceRingProps {
 // Three-orbit Genesis Ring — organized by object tier
 const ORBITS = [
     {
-        label: 'Stars',
-        radius: 100,
+        id: 'macro',
+        label: 'ORBIT 1: MACRO',
+        radius: 110,
         items: [
-            { type: NoteType.Sun, label: 'Star', glow: '#fbbf24' },
-            { type: NoteType.Nebula, label: 'Nebula', glow: '#a78bfa' },
-            { type: NoteType.Galaxy, label: 'Galaxy', glow: '#6366f1' },
+            { type: NoteType.Sun, label: 'Star', glow: '#fbbf24', desc: 'Central Core Content' },
+            { type: NoteType.Nebula, label: 'Nebula', glow: '#a78bfa', desc: 'Expansive Cloud' },
+            { type: NoteType.Galaxy, label: 'Galaxy', glow: '#6366f1', desc: 'Universal Container' },
         ],
     },
     {
-        label: 'Planets',
-        radius: 200,
+        id: 'meso',
+        label: 'ORBIT 2: MESO',
+        radius: 210,
         items: [
-            { type: NoteType.Earth, label: 'Earth', glow: '#3b82f6' },
-            { type: NoteType.Mars, label: 'Mars', glow: '#ef4444' },
-            { type: NoteType.Jupiter, label: 'Jupiter', glow: '#f59e0b' },
-            { type: NoteType.Saturn, label: 'Saturn', glow: '#eab308' },
-            { type: NoteType.Venus, label: 'Venus', glow: '#f97316' },
-            { type: NoteType.Uranus, label: 'Uranus', glow: '#06b6d4' },
-            { type: NoteType.Neptune, label: 'Neptune', glow: '#2563eb' },
+            { type: NoteType.Earth, label: 'Earth', glow: '#3b82f6', desc: 'Standard Logic' },
+            { type: NoteType.Mars, label: 'Mars', glow: '#ef4444', desc: 'Aggressive Goal' },
+            { type: NoteType.Jupiter, label: 'Jupiter', glow: '#f59e0b', desc: 'Heavy Data' },
+            { type: NoteType.Saturn, label: 'Saturn', glow: '#eab308', desc: 'Structured Rings' },
         ],
     },
     {
-        label: 'Moons & Fragments',
-        radius: 290,
+        id: 'micro',
+        label: 'ORBIT 3: MICRO',
+        radius: 300,
         items: [
-            { type: NoteType.Moon, label: 'Moon', glow: '#d1d5db' },
-            { type: NoteType.Mercury, label: 'Mercury', glow: '#9ca3af' },
-            { type: NoteType.Pluto, label: 'Pluto', glow: '#7c3aed' },
-            { type: NoteType.Asteroid, label: 'Asteroid', glow: '#6b7280' },
-            { type: NoteType.Comet, label: 'Comet', glow: '#22d3ee' },
+            { type: NoteType.Moon, label: 'Moon', glow: '#d1d5db', desc: 'Satallite Note' },
+            { type: NoteType.Asteroid, label: 'Asteroid', glow: '#6b7280', desc: 'Minor Fragment' },
+            { type: NoteType.Comet, label: 'Comet', glow: '#22d3ee', desc: 'Fleeting Thought' },
         ],
     },
 ];
@@ -105,7 +103,7 @@ export const NotesChoiceRing: React.FC<NotesChoiceRingProps> = ({ x: _x, y: _y, 
                     <React.Fragment key={orbit.label}>
                         {/* Orbit circle border */}
                         <div
-                            className={`absolute rounded-full border ${ringBorderClass}`}
+                            className={`absolute rounded-full border ${ringBorderClass} pointer-events-none`}
                             style={{
                                 width: orbit.radius * 2,
                                 height: orbit.radius * 2,
@@ -113,7 +111,14 @@ export const NotesChoiceRing: React.FC<NotesChoiceRingProps> = ({ x: _x, y: _y, 
                                 left: '50%',
                                 transform: 'translate(-50%, -50%)',
                             }}
-                        />
+                        >
+                            <span className={clsx(
+                                'absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-[7px] tracking-[0.35em] font-black uppercase opacity-20',
+                                isSolar ? 'bg-slate-100 text-slate-900' : 'bg-white/5 text-white'
+                            )}>
+                                {orbit.label}
+                            </span>
+                        </div>
 
                         {/* Items on this orbit */}
                         {orbit.items.map((item, itemIdx) => {
@@ -147,24 +152,37 @@ export const NotesChoiceRing: React.FC<NotesChoiceRingProps> = ({ x: _x, y: _y, 
                                 >
                                     <div
                                         className={clsx(
-                                            'rounded-full transition-all duration-300',
-                                            'group-hover:scale-125 group-hover:shadow-lg'
+                                            'rounded-full transition-all duration-300 relative',
+                                            'group-hover:scale-125 group-hover:shadow-[0_0_30px_rgba(255,255,255,0.4)]',
+                                            'glass-panel border-white/20'
                                         )}
                                         style={{
                                             width: tierSize,
                                             height: tierSize,
-                                            background: `radial-gradient(circle at 35% 35%, ${item.glow}cc, ${item.glow}66)`,
-                                            boxShadow: `0 0 12px ${item.glow}40`,
+                                            background: `radial-gradient(circle at 35% 35%, ${item.glow}aa, ${item.glow}44)`,
+                                            boxShadow: `0 0 15px ${item.glow}30, inset 0 0 10px rgba(255,255,255,0.2)`,
                                         }}
-                                    />
-                                    <span className={clsx(
-                                        'absolute -bottom-5 left-1/2 -translate-x-1/2',
-                                        'opacity-0 group-hover:opacity-100 transition-opacity',
-                                        'text-[9px] font-mono tracking-widest uppercase whitespace-nowrap',
-                                        isSolar ? 'text-slate-500' : 'text-white/70'
+                                    >
+                                        <div className="absolute inset-0 rounded-full bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity blur-sm" />
+                                    </div>
+                                    <div className={clsx(
+                                        'absolute -bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5',
+                                        'opacity-0 group-hover:opacity-100 transition-all group-hover:-translate-y-1',
+                                        'pointer-events-none'
                                     )}>
-                                        {item.label}
-                                    </span>
+                                        <span className={clsx(
+                                            'text-[10px] font-bold tracking-[0.2em] uppercase whitespace-nowrap',
+                                            isSolar ? 'text-slate-800' : 'text-white'
+                                        )}>
+                                            {item.label}
+                                        </span>
+                                        <span className={clsx(
+                                            'text-[7px] tracking-widest uppercase whitespace-nowrap opacity-60 font-medium',
+                                            isSolar ? 'text-slate-500' : 'text-white/60'
+                                        )}>
+                                            {(item as any).desc}
+                                        </span>
+                                    </div>
                                 </motion.div>
                             );
                         })}

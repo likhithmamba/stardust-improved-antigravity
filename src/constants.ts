@@ -176,3 +176,16 @@ export const LOGICAL_SLOT_RADIUS: Record<string, number> = {
 
 // Unified View Mode Definition
 export type ViewMode = 'free' | 'orbital' | 'constellation' | 'nebula' | 'project' | 'matrix' | 'prism' | 'timeline' | 'void' | 'stream' | 'archive';
+
+/**
+ * Returns the "Tier" of a celestial object.
+ * Tier 1: Major Bodies (Sun, Galaxy, Nebula, Black Hole, Jupiter, Saturn)
+ * Tier 2: Medium Bodies (Earth, Mars, Venus, Uranus, Neptune)
+ * Tier 3: Minor Bodies (Mercury, Pluto, Moon, Asteroid, Comet)
+ */
+export function getNoteObjectTier(type: NoteType): 1 | 2 | 3 {
+    const t = type as string;
+    if (['sun', 'galaxy', 'nebula', 'black-hole', 'jupiter', 'saturn'].includes(t)) return 1;
+    if (['earth', 'mars', 'venus', 'uranus', 'neptune'].includes(t)) return 2;
+    return 3;
+}
