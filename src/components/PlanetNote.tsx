@@ -339,7 +339,10 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
                     ...(note.color || visualColor ? {
                         boxShadow: `0 0 30px -5px ${visualColor || note.color}, inset 0 0 20px -5px ${visualColor || note.color}`,
                         borderColor: visualColor || note.color
-                    } : {}),
+                    } : {
+                        borderColor: 'var(--mode-accent, rgba(255,255,255,0.5))',
+                        boxShadow: '0 0 20px -5px var(--mode-accent, transparent)'
+                    }),
                     // We DO NOT set transform here. It is handled by the parent wrapper via Engine.
                 } as React.CSSProperties}
                 layoutId={`note-${note.id}`}
@@ -397,8 +400,9 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
                     )}
                     style={{
                         fontSize: fontSize,
-                        color: note.textColor || 'white',
-                        textShadow: '0 2px 4px rgba(0,0,0,0.5)'
+                        fontFamily: 'var(--mode-font)',
+                        color: note.textColor || (designSystem === 'solar' ? '#1a1a1a' : 'white'),
+                        textShadow: designSystem === 'solar' ? 'none' : '0 2px 4px rgba(0,0,0,0.5)'
                     }}
                     contentEditable={showContent && isEditing}
                     suppressContentEditableWarning
