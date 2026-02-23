@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import type { EngineConnection, EngineNote } from '../engine/types/EngineTypes';
 import { visualRegistry } from '../engine/render/VisualRegistry';
 import { useStore } from '../store/useStore';
+import clsx from 'clsx';
 
 interface SmartLinkProps {
     connection: EngineConnection;
@@ -23,57 +24,107 @@ export const SmartLink: React.FC<SmartLinkProps> = ({ connection, source, target
         };
     }, [connection.id]);
 
-    // Initial Path Calculation (Stateless render fallback)
-    const sx = source.x + (source.w || 0) / 2;
-    const sy = source.y + (source.h || 0) / 2;
-    const tx = target.x + (target.w || 0) / 2;
-    const ty = target.y + (target.h || 0) / 2;
+    // Calculate Handle Nodes (Top, Right, Bottom, Left)
+    const getHandles = (node: EngineNote) => {
+        const cx = node.x + (node.w || 0) / 2;
+        const cy = node.y + (node.h || 0) / 2;
+        const r = (node.w || 0) / 2;
+        return [
+            { x: cx, y: cy - r }, // Top
+            { x: cx + r, y: cy }, // Right
+            { x: cx, y: cy + r }, // Bottom
+            { x: cx - r, y: cy }  // Left
+        ];
+    };
 
-    // Midpoint for Label (React-driven, might lag slightly behind physics, but acceptable)
-    // To fix lag: VisualRegistry would need to update this element too.
+    // Find closest handles for stable initial/fallback render
+    const sourceHandles = getHandles(source);
+    const targetHandles = getHandles(target);
+
+    let bestDist = Infinity;
+    let sx = source.x + (source.w || 0) / 2;
+    let sy = source.y + (source.h || 0) / 2;
+    let tx = target.x + (target.w || 0) / 2;
+    let ty = target.y + (target.h || 0) / 2;
+
+    sourceHandles.forEach(sh => {
+        targetHandles.forEach(th => {
+            const dx = sh.x - th.x;
+            const dy = sh.y - th.y;
+            const d = dx * dx + dy * dy;
+            if (d < bestDist) {
+                bestDist = d;
+                sx = sh.x;
+                sy = sh.y;
+                tx = th.x;
+                ty = th.y;
+            }
+        });
+    });
+
     const midX = (sx + tx) / 2;
     const midY = (sy + ty) / 2;
     const label = connection.label || '';
 
     return (
         <g className="smart-link group">
-            {/* Glow */}
+            {/* Glow Path (Subtle) */}
             <path
-                d={`M ${sx} ${sy} L ${tx} ${ty}`} // Initial draw
+                d={`M ${sx} ${sy} L ${tx} ${ty}`}
                 fill="none"
-                stroke="rgba(139, 92, 246, 0.3)"
-                strokeWidth={4}
-                className="blur-[4px] transition-colors group-hover:stroke-purple-400/50"
+                stroke="rgba(255, 255, 255, 0.05)"
+                strokeWidth={6}
+                className="blur-[8px]"
             />
-            {/* Core Line (Driven by VisualRegistry) */}
+
+            {/* Core Dotted Line (Visual Registry will update 'd' attribute directly) */}
             <path
                 ref={pathRef}
                 d={`M ${sx} ${sy} L ${tx} ${ty}`}
                 fill="none"
-                stroke="rgba(255, 255, 255, 0.2)"
-                strokeWidth={1}
-                strokeDasharray={label ? "5,5" : "none"}
+                stroke="rgba(255, 255, 255, 0.25)"
+                strokeWidth={1.5}
+                strokeDasharray="6,4"
+                strokeLinecap="round"
+                className="transition-colors group-hover:stroke-blue-400"
             />
 
-            {/* Label Input */}
-            <foreignObject x={midX - 70} y={midY - 14} width={140} height={28} className="overflow-visible pointer-events-auto">
-                <div className="flex justify-center items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <input
-                        type="text"
-                        defaultValue={label}
-                        placeholder="Link..."
-                        onBlur={(e) => updateConnection(connection.id, { label: e.target.value })}
-                        className="w-20 bg-black/60 border border-white/10 rounded-l-full text-[10px] text-center text-white placeholder-white/30 px-2 py-0.5 outline-none focus:border-purple-500 transition-colors backdrop-blur-sm shadow-lg pointer-events-auto select-none"
-                    />
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            removeConnection(connection.id);
-                        }}
-                        className="bg-red-500/20 hover:bg-red-500/40 border border-red-500/30 text-red-200 rounded-r-full p-0.5 px-2 h-full flex items-center justify-center transition-colors backdrop-blur-sm shadow-lg pointer-events-auto"
-                    >
-                        ×
-                    </button>
+            {/* Premium Pill Label */}
+            <foreignObject
+                x={midX - 50}
+                y={midY - 12}
+                width={100}
+                height={24}
+                className="overflow-visible pointer-events-auto"
+            >
+                <div className="flex items-center justify-center h-full">
+                    <div className={clsx(
+                        "flex items-center gap-1 px-3 py-1 rounded-full",
+                        "bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-xl",
+                        "transition-all duration-300 group-hover:border-blue-500/50 group-hover:scale-105",
+                        !label && "opacity-0 group-hover:opacity-100" // Hide if empty unless hovered
+                    )}>
+                        <input
+                            type="text"
+                            defaultValue={label}
+                            placeholder="Link..."
+                            onBlur={(e) => updateConnection(connection.id, { label: e.target.value })}
+                            className="bg-transparent text-[10px] text-white text-center w-full outline-none placeholder-white/20 font-medium"
+                            onPointerDown={(e) => e.stopPropagation()}
+                        />
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                removeConnection(connection.id);
+                            }}
+                            className="text-white/40 hover:text-red-400 p-0.5 rounded-full transition-colors"
+                            title="Remove Link"
+                        >
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M18 6L6 18M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </foreignObject>
         </g>

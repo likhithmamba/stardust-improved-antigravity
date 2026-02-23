@@ -12,15 +12,14 @@ import { useSettingsStore } from '../ui/settings/settingsStore';
 import { planetExpander } from '../utils/ai';
 import { Sparkles } from 'lucide-react';
 
-
 interface PlanetNoteProps {
     note: Note;
     isSelected: boolean;
     zoom: number;
-    isReadOnly?: boolean; // NEW: For Prism/Locked modes
-    visualColor?: string; // NEW: Override color
-    layoutOrigin?: { x: number; y: number }; // NEW: Local constraints
-    viewMode?: string; // NEW: For constraint logic
+    isReadOnly?: boolean;
+    visualColor?: string;
+    layoutOrigin?: { x: number; y: number };
+    viewMode?: string;
     onConnectStart: (id: string, x: number, y: number) => void;
     onDragStart?: (id: string) => void;
     onDrag?: (id: string, x: number, y: number) => void;
@@ -37,11 +36,9 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
     const updateNote = useStore((state) => state.updateNote);
     const setSelectedId = useStore((state) => state.setSelectedId);
 
-    // Migrated: UI Toggles & Modes from SettingsStore
     const designSystem = useSettingsStore((state) => state.designSystem);
     const mode = useSettingsStore((state) => state.mode);
 
-    // Pro/Ultra Checks
     const proMode = mode === 'pro' || mode === 'ultra';
     const ultraMode = mode === 'ultra';
     const isEnhanced = proMode || ultraMode;
@@ -50,24 +47,27 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
     const isFocused = focusModeId === note.id;
     const isDimmed = focusModeId && !isFocused;
 
-    // Unified Type: Always use the node's actual type
     const effectiveType = note.type;
     const baseStyle = NOTE_STYLES[effectiveType] || NOTE_STYLES[NoteType.Asteroid];
-
-    // LOD: Zoom-based Level of Detail
     const lod: ZoomLOD = useZoomLOD();
-
-    // Allow mutating style for local needs or clone it
     const style = { ...baseStyle };
 
-    // Local Visual Position for Free-Threaded Dragging (60FPS)
-    // We keep state for initial render, but moving forward we use refs/registry
-    // const [visualPosition, setVisualPosition] = useState({ x: note.x, y: note.y }); // REMOVED: Unused
-    const dragPositionRef = useRef({ x: note.x, y: note.y }); // NEW: Track drag without render
+    const dragPositionRef = useRef({ x: note.x, y: note.y });
     const isDragging = useRef(false);
-
-    // Explicitly declare ref here to be safe and available for LayoutEffect
     const noteRef = useRef<HTMLDivElement>(null);
+    const textRef = useRef<HTMLDivElement>(null);
+
+    // Compute Size
+    let size = style.width;
+    if (viewMode === 'free') {
+        size = REAL_SIZES[note.type] || size;
+    }
+
+    const showText = lod === 'surface' || lod === 'planet';
+    const showContent = lod === 'surface';
+    const showAsMinimalDot = lod === 'galaxy';
+    const tier = [NoteType.Sun, NoteType.Galaxy, NoteType.Nebula, NoteType.Jupiter, NoteType.Saturn].includes(effectiveType as any) ? 1 : 2;
+    const isMajor = tier === 1;
 
     // PERFORMANCE: Register with Visual Engine
     React.useLayoutEffect(() => {
@@ -83,44 +83,28 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
     // Sync visual position when store changes
     React.useEffect(() => {
         if (!isDragging.current) {
-            // setVisualPosition({ x: note.x, y: note.y }); // REMOVED
             dragPositionRef.current = { x: note.x, y: note.y };
-            // Ensure registry is smooth
             visualRegistry.updatePosition(note.id, note.x, note.y);
         }
     }, [note.x, note.y, note.id]);
 
-    const contentRef = useRef<HTMLDivElement>(null);
+    // Text Auto-fit Logic
+    React.useLayoutEffect(() => {
+        if (textRef.current && showText) {
+            const el = textRef.current;
+            const containerSize = size * 0.7;
+            el.style.fontSize = '24px';
+            let currentSize = 24;
+
+            while ((el.scrollHeight > containerSize || el.scrollWidth > containerSize) && currentSize > 8) {
+                currentSize -= 1;
+                el.style.fontSize = `${currentSize}px`;
+            }
+        }
+    }, [note.title, size, showText]);
+
     const lastTap = useRef<number>(0);
     const [isEditing, setIsEditing] = useState(false);
-
-    // Text Optimization: Cache font size
-    const fontSize = React.useMemo(() => {
-        if (note.fontSize) return `${note.fontSize}px`;
-        const len = (note.title || '').length;
-        if (len < 10) return '24px';
-        if (len < 30) return '20px';
-        if (len < 60) return '18px';
-        if (len < 100) return '16px';
-        if (len < 200) return '14px';
-        if (len < 350) return '13px';
-        return '12px';
-    }, [note.title, note.fontSize]);
-
-    // Compute Size — use original NOTE_STYLES sizes (known working)
-    let size = style.width;
-
-    // Phase 3: calculateNoteSize logic
-    if (viewMode === 'free') {
-        size = REAL_SIZES[note.type] || size;
-    }
-
-    // LOD Logic
-    const showText = lod === 'surface' || lod === 'planet';
-    const showContent = lod === 'surface';
-    const showAsMinimalDot = lod === 'galaxy';
-    const tier = [NoteType.Sun, NoteType.Galaxy, NoteType.Nebula, NoteType.Jupiter, NoteType.Saturn].includes(effectiveType as any) ? 1 : 2;
-    const isMajor = tier === 1;
 
     const bind = useGesture({
         onDragStart: ({ event }) => {
@@ -129,10 +113,7 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
 
             isDragging.current = true;
             setSelectedId(note.id);
-
-            // LOCK PHYSICS: Prevent engine from fighting user
-            onDragStart?.(note.id); // Call prop if exists
-
+            onDragStart?.(note.id);
             updateNote(note.id, { fixed: true });
         },
         onDrag: ({ delta: [dx, dy], event, memo = { x: dragPositionRef.current.x, y: dragPositionRef.current.y } }) => {
@@ -143,20 +124,14 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
             let newX = memo.x + dx / zoom;
             let newY = memo.y + dy / zoom;
 
-            // DIRECT DOM UPDATE (No React Render)
             visualRegistry.updatePosition(note.id, newX, newY);
             dragPositionRef.current = { x: newX, y: newY };
-
-            // Notify Parent
             onDrag?.(note.id, newX, newY);
 
             return { x: newX, y: newY };
         },
-
         onDragEnd: () => {
             isDragging.current = false;
-
-            // Final constraint check
             let finalX = dragPositionRef.current.x;
             let finalY = dragPositionRef.current.y;
             let dataUpdates: Record<string, any> = {};
@@ -174,19 +149,16 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
                 dataUpdates = constraint.dataUpdates || {};
             }
 
-            // 1. Commit Position
-            const updatePayload: any = {
+            updateNote(note.id, {
                 x: finalX,
                 y: finalY,
                 w: size,
                 h: size,
-                fixed: false, // Release lock
+                fixed: false,
                 vx: 0,
                 vy: 0,
                 ...dataUpdates
-            };
-
-            updateNote(note.id, updatePayload);
+            });
             onDragEnd?.(note.id, finalX, finalY);
         },
         onPointerDown: ({ event }) => {
@@ -206,10 +178,9 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
 
     const handleBlur = () => {
         setIsEditing(false);
-        if (contentRef.current) {
-            const newContent = contentRef.current.innerText;
+        if (textRef.current) {
+            const newContent = textRef.current.innerText;
             const updates: Partial<Note> = { title: newContent };
-
             if (proMode) {
                 const analysis = analyzeContent(newContent);
                 if (analysis?.color && !note.color) {
@@ -226,58 +197,57 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
 
     const handleContentClick = (e: React.MouseEvent) => {
         if (isReadOnly) return;
-
-        // Special case for Welcome Nebula
         if (note.id === 'welcome-nebula') {
             deleteNote(note.id);
             return;
         }
-
         if (onClickOverride) {
             e.stopPropagation();
             onClickOverride(note.id);
             return;
         }
-
-        // Smart Zoom + Edit: If far away and proMode, zoom first then enter edit
         if (proMode) {
             const w = window.innerWidth;
             const h = window.innerHeight;
-            const targetX = -note.x * 1 + w / 2 - (size * 1) / 2;
-            const targetY = -note.y * 1 + h / 2 - (size * 1) / 2;
+            const targetX = -note.x * 1 + w / 2 - size / 2;
+            const targetY = -note.y * 1 + h / 2 - size / 2;
             const dx = viewport.x - targetX;
             const dy = viewport.y - targetY;
             const dist = Math.sqrt(dx * dx + dy * dy);
-
             if (dist > 100 || Math.abs(viewport.zoom - 1) > 0.2) {
                 setViewport({ x: targetX, y: targetY, zoom: 1 });
-                // Don't return — still enter edit mode after zoom
             }
         }
-
-        // Always enter edit mode on double-click
         setIsEditing(true);
         setTimeout(() => {
-            if (contentRef.current) {
-                contentRef.current.focus();
-            }
+            if (textRef.current) textRef.current.focus();
         }, 50);
     };
 
-    // Connection Handles
     const renderHandle = (position: 'top' | 'right' | 'bottom' | 'left') => {
         if (!isSelected || isReadOnly) return null;
-
-        const handleClass = clsx("handle-base", `handle-${position}`);
-
+        const handleClass = clsx("handle-base", `handle-${position}`, "fixed-node");
         return (
             <div
-                className={clsx(handleClass, "pointer-events-auto")}
-                onPointerDown={() => {
-                    const rect = noteRef.current?.getBoundingClientRect();
-                    if (rect) {
-                        onConnectStart(note.id, note.x + size / 2, note.y + size / 2);
-                    }
+                key={position}
+                className={clsx(handleClass, "pointer-events-auto z-[60]")}
+                style={{
+                    width: 12,
+                    height: 12,
+                    background: note.color || '#3b82f6',
+                    border: '2px solid white',
+                    borderRadius: '50%',
+                    position: 'absolute'
+                }}
+                onPointerDown={(e) => {
+                    e.stopPropagation();
+                    let hx = note.x + size / 2;
+                    let hy = note.y + size / 2;
+                    if (position === 'top') hy -= size / 2;
+                    if (position === 'bottom') hy += size / 2;
+                    if (position === 'left') hx -= size / 2;
+                    if (position === 'right') hx += size / 2;
+                    onConnectStart(note.id, hx, hy);
                 }}
             />
         );
@@ -285,21 +255,12 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
 
     const bindHandlers = bind() as any;
 
-    // REFACTOR: Separate Engine Position (Outer) and React Appearance (Inner)
-    // This wrapper is controlled by VisualRegistry and completely ignored by React reconciliation
-    // regarding the 'transform' style, because we don't set 'style' prop on it (except initial).
-
-    // LOD: At galaxy zoom level, render a minimal dot
     if (showAsMinimalDot) {
         return (
-            <div
-                ref={noteRef}
-                data-note-id={note.id}
-                className="absolute top-0 left-0"
-            >
+            <div ref={noteRef} data-note-id={note.id} className="absolute top-0 left-0">
                 <div
                     style={{
-                        width: size * 0.2, // Tiny dot
+                        width: size * 0.2,
                         height: size * 0.2,
                         borderRadius: '50%',
                         background: note.color || visualColor || baseStyle.color || '#6366f1',
@@ -311,13 +272,7 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
     }
 
     return (
-        <div
-            ref={noteRef}
-            data-note-id={note.id}
-            className="absolute top-0 left-0 hover:z-50"
-        // Important: Do NOT set dynamic style here that React updates often.
-        // VisualRegistry will set 'transform'. React won't touch it if we don't provide style.transform.
-        >
+        <div ref={noteRef} data-note-id={note.id} className="absolute top-0 left-0 hover:z-50">
             <motion.div
                 {...bindHandlers}
                 onPointerUp={(e: React.PointerEvent) => {
@@ -337,7 +292,6 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
                     '--planet-size': `${size}px`,
                     width: 'var(--planet-size)',
                     height: 'var(--planet-size)',
-                    // Apply User Selected Color as a strong glow
                     ...(note.color || visualColor ? {
                         boxShadow: `0 0 30px -5px ${visualColor || note.color}, inset 0 0 20px -5px ${visualColor || note.color}`,
                         borderColor: visualColor || note.color
@@ -345,16 +299,13 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
                         borderColor: 'var(--mode-accent, rgba(255,255,255,0.5))',
                         boxShadow: '0 0 20px -5px var(--mode-accent, transparent)'
                     }),
-                    // We DO NOT set transform here. It is handled by the parent wrapper via Engine.
                 } as any}
                 layoutId={`note-${note.id}`}
                 initial={false}
                 animate={{
                     width: size,
                     height: size,
-                    scale: note.isDying
-                        ? (viewMode === 'orbital' ? 2.5 : 0)
-                        : (isFocused ? 1.2 : 1),
+                    scale: note.isDying ? (viewMode === 'orbital' ? 2.5 : 0) : (isFocused ? 1.2 : 1),
                     opacity: note.isDying ? 0 : (isDimmed ? 0.2 : 1),
                     filter: note.isDying && viewMode === 'orbital' ? 'brightness(3) blur(4px)' : undefined
                 }}
@@ -365,11 +316,9 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
                     opacity: { duration: 0.3 }
                 }}
             >
-                {/* Simplified geometry for non-surface LOD */}
                 {lod !== 'surface' && !isMajor && (
                     <div className="absolute inset-0 rounded-full bg-inherit" />
                 )}
-                {/* UNIFIED RENDERER: Always use Premium Glassmorphism */}
                 {isEnhanced && (
                     <div className="absolute inset-0 pointer-events-none overflow-visible">
                         <div className="absolute inset-[-10%] rounded-full opacity-60 mix-blend-screen"
@@ -377,7 +326,6 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
                                 background: `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4) 0%, transparent 60%)`
                             }}
                         />
-
                         {note.type === NoteType.Saturn && effectiveType === NoteType.Saturn && (
                             <>
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[260%] h-[260%] opacity-40 mix-blend-screen"
@@ -398,17 +346,18 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
                     </div>
                 )}
                 <div
-                    ref={contentRef}
+                    ref={textRef}
                     className={clsx(
                         "absolute inset-0 z-20 flex items-center justify-center text-center p-[15%]",
                         "whitespace-pre-wrap break-words outline-none",
-                        showContent && isEditing ? "overflow-y-auto cursor-text" : "cursor-pointer overflow-hidden"
+                        showContent && isEditing ? "overflow-y-auto cursor-text px-2" : "cursor-pointer overflow-hidden"
                     )}
                     style={{
-                        fontSize: fontSize,
+                        fontSize: 'inherit',
                         fontFamily: 'var(--mode-font)',
                         color: note.textColor || (designSystem === 'solar' ? '#1a1a1a' : 'white'),
-                        textShadow: designSystem === 'solar' ? 'none' : '0 2px 4px rgba(0,0,0,0.5)'
+                        textShadow: designSystem === 'solar' ? 'none' : '0 2px 4px rgba(0,0,0,0.5)',
+                        lineHeight: 1.2
                     }}
                     contentEditable={showContent && isEditing}
                     suppressContentEditableWarning
@@ -423,8 +372,6 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
                 >
                     {showText && (note.title || style.label)}
                 </div>
-
-                {/* AI Expand Button (Visible only when editing) */}
                 {isEditing && (
                     <motion.button
                         initial={{ opacity: 0, y: 10 }}
@@ -436,7 +383,7 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
                             try {
                                 const expanded = await planetExpander(note.title, note.content || '');
                                 updateNote(note.id, { title: expanded });
-                                if (contentRef.current) contentRef.current.innerText = expanded;
+                                if (textRef.current) textRef.current.innerText = expanded;
                                 setIsEditing(false);
                             } catch (err: any) {
                                 window.dispatchEvent(new CustomEvent('stardust:toast', { detail: { message: err.message, type: 'info' } }));
@@ -448,8 +395,6 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
                         <Sparkles size={16} />
                     </motion.button>
                 )}
-
-                {/* Shared Selection Ring */}
                 {isSelected && (
                     <motion.div
                         layoutId="selection-ring"
@@ -458,6 +403,27 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.2 }}
                     />
+                )}
+                {isSelected && !isEditing && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="absolute -bottom-12 left-1/2 -translate-x-1/2 flex gap-2 p-2 rounded-full glass-panel border-white/5 z-[100]"
+                    >
+                        {(
+                            effectiveType === NoteType.Sun ? ['#f59e0b', '#ef4444', '#f87171', '#0ea5e9'] :
+                                ['earth', 'venus', 'mars'].includes(effectiveType) ? ['#3b82f6', '#22c55e', '#f97316', '#ef4444', '#a855f7'] :
+                                    ['jupiter', 'saturn'].includes(effectiveType) ? ['#eab308', '#d97706', '#78350f', '#f59e0b'] :
+                                        ['#94a3b8', '#e2e8f0', '#ffffff', '#475569']
+                        ).map(color => (
+                            <button
+                                key={color}
+                                onClick={() => updateNote(note.id, { color })}
+                                className="w-4 h-4 rounded-full border border-white/20 transition-transform hover:scale-125 hover:border-white/50"
+                                style={{ background: color }}
+                            />
+                        ))}
+                    </motion.div>
                 )}
 
                 {renderHandle('top')}
@@ -470,15 +436,12 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
 };
 
 export const PlanetNote = React.memo(PlanetNoteComponent, (prev, next) => {
-    // Custom comparison for high performance
     if (prev.isSelected !== next.isSelected) return false;
     if (prev.zoom !== next.zoom) return false;
-    if (prev.note.x !== next.note.x || prev.note.y !== next.note.y) return false; // Basic pos check (though managed by engine mostly)
-    if (prev.note.title !== next.note.title) return false;
-    if (prev.note.color !== next.note.color) return false;
-
-    // Check if handlers changed (should generally be stable now)
-    // if (prev.onDrag !== next.onDrag) return false; // Handled by useCallback in parent
-
-    return true; // Assume equal otherwise
+    const pNote = prev.note;
+    const nNote = next.note;
+    if (pNote.x !== nNote.x || pNote.y !== nNote.y) return false;
+    if (pNote.title !== nNote.title) return false;
+    if (pNote.color !== nNote.color) return false;
+    return true;
 });
