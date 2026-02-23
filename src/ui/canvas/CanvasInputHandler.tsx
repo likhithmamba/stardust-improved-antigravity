@@ -42,7 +42,7 @@ export const CanvasInputHandler: React.FC = () => {
             // Current CanvasViewport uses onClick/onDoubleClick on the div.
             // We will leave the dispatch here as an option for "external" control.
             window.dispatchEvent(new CustomEvent('stardust:openRadialMenu', {
-                detail: { screenX: ev.clientX, screenY: ev.clientY }
+                detail: { x: ev.clientX, y: ev.clientY }
             }));
         }
 

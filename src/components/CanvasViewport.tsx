@@ -72,13 +72,12 @@ export const CanvasViewport: React.FC = () => {
     const scaleMode = useStore((state) => state.scaleMode);
 
     // Interaction State
-    const [creationMenu, setCreationMenu] = useState<{ isOpen: boolean; x: number; y: number; worldX: number; worldY: number } | null>(null);
     const [connectionStart, setConnectionStart] = useState<{ id: string; x: number; y: number } | null>(null);
     const [tempConnectionEnd, setTempConnectionEnd] = useState<{ x: number; y: number } | null>(null);
     const [blackHoleActive, setBlackHoleActive] = useState(false);
 
-    // Mobile Chooser State
-    const [sphericalMenu, setSphericalMenu] = useState<{ isOpen: boolean; x: number; y: number; worldX: number; worldY: number } | null>(null);
+    // Unified Genesis Ring (Creation) Menu State
+    const [activeMenu, setActiveMenu] = useState<{ isOpen: boolean; x: number; y: number; worldX: number; worldY: number } | null>(null);
 
     // Linking System State
     const [contextMenu, setContextMenu] = useState<{ x: number; y: number; noteId: string } | null>(null);
@@ -88,15 +87,15 @@ export const CanvasViewport: React.FC = () => {
     // Event Listener for CanvasInputHandler
     useEffect(() => {
         const handleOpenRadial = (e: any) => {
-            const { screenX, screenY } = e.detail;
+            const { x, y } = e.detail;
             const rect = containerRef.current?.getBoundingClientRect();
             if (rect) {
-                const worldX = (screenX - rect.left - viewport.x) / viewport.zoom;
-                const worldY = (screenY - rect.top - viewport.y) / viewport.zoom;
-                setCreationMenu({
+                const worldX = (x - rect.left - viewport.x) / viewport.zoom;
+                const worldY = (y - rect.top - viewport.y) / viewport.zoom;
+                setActiveMenu({
                     isOpen: true,
-                    x: screenX - rect.left,
-                    y: screenY - rect.top,
+                    x: x - rect.left,
+                    y: y - rect.top,
                     worldX,
                     worldY
                 });
@@ -112,40 +111,12 @@ export const CanvasViewport: React.FC = () => {
                 const worldY = (y - rect.top - viewport.y) / viewport.zoom;
 
                 if (viewMode !== 'free' && viewMode !== 'void') {
-                    // Direct Call Logic for structured modes
-                    const spawnX = worldX;
-                    const spawnY = worldY;
-
-                    const constraint = ViewConstraints.applyConstraints(
-                        viewMode || 'free',
-                        spawnX,
-                        spawnY,
-                        layoutOrigin,
-                        { width: window.innerWidth, height: window.innerHeight }
-                    );
-
-                    let finalX = constraint.x;
-                    let finalY = constraint.y;
-                    let finalTags: string[] = constraint.dataUpdates?.tags || [];
-                    let finalPriority = constraint.dataUpdates?.priority;
-
-                    addNote({
-                        id: Math.random().toString(36).substr(2, 9),
-                        x: finalX,
-                        y: finalY,
-                        w: 0,
-                        h: 0,
-                        type: NoteType.Earth,
-                        title: '',
-                        tags: finalTags,
-                        priority: finalPriority,
-                        originMode: constraint.dataUpdates?.originMode || 'free'
-                    });
-                    soundManager.playClick();
+                    // Direct Call Logic for structured modes (no menu needed)
+                    handleCreateNote(NoteType.Earth, worldX, worldY);
                     return;
                 }
 
-                setSphericalMenu({
+                setActiveMenu({
                     isOpen: true,
                     x: x - rect.left,
                     y: y - rect.top,
@@ -372,13 +343,12 @@ export const CanvasViewport: React.FC = () => {
     // Show all notes in all modes — no originMode filtering
     const visibleNotes = notes;
 
-    const handleCreateNote = (type: NoteType) => {
-        if (creationMenu || sphericalMenu) {
-            const menu = sphericalMenu || creationMenu;
-            if (!menu) return;
+    const handleCreateNote = (type: NoteType, overrideX?: number, overrideY?: number) => {
+        if (activeMenu || (overrideX !== undefined && overrideY !== undefined)) {
+            const menu = activeMenu;
 
-            let spawnX = menu.worldX;
-            let spawnY = menu.worldY;
+            let spawnX = overrideX !== undefined ? overrideX : menu?.worldX || 0;
+            let spawnY = overrideY !== undefined ? overrideY : menu?.worldY || 0;
             let initialTags: string[] = [];
             let initialPriority: string = 'default';
 
@@ -416,8 +386,7 @@ export const CanvasViewport: React.FC = () => {
                 originMode: originMode as any
             });
             soundManager.playClick();
-            setCreationMenu(null);
-            setSphericalMenu(null);
+            setActiveMenu(null);
         }
     };
 
@@ -556,23 +525,12 @@ export const CanvasViewport: React.FC = () => {
             <BlackHole isActive={blackHoleActive} />
 
             <AnimatePresence>
-                {creationMenu?.isOpen && (
+                {activeMenu?.isOpen && (
                     <NotesChoiceRing
-                        x={creationMenu.x}
-                        y={creationMenu.y}
+                        x={activeMenu.x}
+                        y={activeMenu.y}
                         onSelect={handleCreateNote}
-                        onClose={() => setCreationMenu(null)}
-                    />
-                )}
-            </AnimatePresence>
-
-            <AnimatePresence>
-                {sphericalMenu?.isOpen && (
-                    <NotesChoiceRing
-                        x={sphericalMenu.x}
-                        y={sphericalMenu.y}
-                        onSelect={handleCreateNote}
-                        onClose={() => setSphericalMenu(null)}
+                        onClose={() => setActiveMenu(null)}
                     />
                 )}
             </AnimatePresence>

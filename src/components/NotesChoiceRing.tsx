@@ -69,16 +69,17 @@ export const NotesChoiceRing: React.FC<NotesChoiceRingProps> = ({ x: _x, y: _y, 
     const designSystem = useSettingsStore((state) => state.designSystem);
     const isSolar = designSystem === 'solar';
 
-    const bgOverlay = isSolar
-        ? 'bg-white/60 backdrop-blur-xl'
-        : 'bg-black/50 backdrop-blur-xl';
+    const menuBlur = isSolar ? 'backdrop-blur-2xl bg-white/40' : 'backdrop-blur-3xl bg-black/60';
 
     const textClass = isSolar ? 'text-slate-700' : 'text-white';
     const subTextClass = isSolar ? 'text-slate-400' : 'text-white/40';
     const ringBorderClass = isSolar ? 'border-slate-200/50' : 'border-white/5';
 
     return (
-        <div className={`fixed inset-0 z-[1000] flex items-center justify-center ${bgOverlay}`} onClick={onClose}>
+        <div
+            className={`fixed inset-0 z-[2000] flex items-center justify-center ${menuBlur}`}
+            onClick={onClose}
+        >
             <motion.div
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -132,18 +133,22 @@ export const NotesChoiceRing: React.FC<NotesChoiceRingProps> = ({ x: _x, y: _y, 
                                 <motion.div
                                     key={item.type}
                                     className="absolute cursor-pointer group"
-                                    initial={{ opacity: 0, scale: 0 }}
-                                    animate={{ opacity: 1, scale: 1 }}
+                                    initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
+                                    animate={{
+                                        opacity: 1,
+                                        scale: 1,
+                                        x: cx,
+                                        y: cy
+                                    }}
                                     transition={{
                                         delay: 0.05 * (orbitIdx * 3 + itemIdx),
                                         type: 'spring',
                                         stiffness: 300,
-                                        damping: 15,
+                                        damping: 20,
                                     }}
                                     style={{
-                                        top: '50%',
-                                        left: '50%',
-                                        transform: `translate(calc(-50% + ${cx}px), calc(-50% + ${cy}px))`,
+                                        top: 'calc(50% - ' + tierSize / 2 + 'px)',
+                                        left: 'calc(50% - ' + tierSize / 2 + 'px)',
                                     }}
                                     onClick={() => {
                                         onSelect(item.type);
