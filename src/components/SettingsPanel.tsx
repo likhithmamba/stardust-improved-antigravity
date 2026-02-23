@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../store/useStore';
-import { saveApiKey, getApiKey } from '../utils/ai';
+import { saveApiKey, getApiKey, AI_MODELS, getModel, saveModel, type AIModelId } from '../utils/ai';
 import { X, Check, Globe, Zap, Layout, Eye, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
@@ -22,8 +22,8 @@ export const SettingsPanel: React.FC = () => {
     const toolbarSkin = useStore((state) => state.toolbarSkin);
 
     // Physics Engine Controls
-    const currentViewMode = useStore((state) => state.viewMode);
-    const setViewMode = useStore((state) => state.setViewMode);
+    const currentViewMode = useSettingsStore((state) => state.viewMode);
+    const setViewMode = useSettingsStore((state) => state.setViewMode);
 
     // Helpers to bridge the UI logic + Feedback
     const dispatchToast = (msg: string, type: 'info' | 'success' | 'ultra' = 'info') => {
@@ -51,19 +51,22 @@ export const SettingsPanel: React.FC = () => {
     const setToolbarSkin = useStore((state) => state.setToolbarSkin);
 
     const [apiKey, setApiKey] = useState('');
+    const [selectedModel, setSelectedModel] = useState<AIModelId>(getModel());
     const [status, setStatus] = useState('');
     const [activeTab, setActiveTab] = useState<'general' | 'features' | 'visuals' | 'templates'>('features');
 
     useEffect(() => {
         if (isSettingsOpen) {
-            getApiKey('default').then(key => {
+            getApiKey().then(key => {
                 if (key) setApiKey(key);
             });
+            setSelectedModel(getModel());
         }
     }, [isSettingsOpen]);
 
     const handleSave = async () => {
-        await saveApiKey(apiKey, 'default');
+        await saveApiKey(apiKey);
+        saveModel(selectedModel);
         setStatus('Saved!');
         setTimeout(() => setStatus(''), 2000);
     };
@@ -266,14 +269,14 @@ export const SettingsPanel: React.FC = () => {
                     {activeTab === 'general' && (
                         <div className="space-y-6">
                             <div>
-                                <label className="block text-slate-400 text-sm mb-2 font-medium">Google Gemini API Key</label>
+                                <label className="block text-slate-400 text-sm mb-2 font-medium">OpenRouter API Key</label>
                                 <div className="flex gap-2">
                                     <input
                                         type="password"
                                         value={apiKey}
                                         onChange={(e) => setApiKey(e.target.value)}
                                         className="flex-1 bg-white/5 border border-white/10 rounded-lg p-3 text-white outline-none focus:border-purple-500 focus:bg-white/10 transition-colors"
-                                        placeholder="Enter key for AI features..."
+                                        placeholder="sk-or-... (from openrouter.ai)"
                                     />
                                     <button
                                         onClick={handleSave}
@@ -283,8 +286,28 @@ export const SettingsPanel: React.FC = () => {
                                     </button>
                                 </div>
                                 <p className="text-xs text-slate-500 mt-2">
-                                    {status ? <span className="text-green-400 flex items-center gap-1"><Check size={12} /> {status}</span> : "Key is stored locally securely."}
+                                    {status ? <span className="text-green-400 flex items-center gap-1"><Check size={12} /> {status}</span> : "Get your key at openrouter.ai — supports GPT-4o, Claude, Gemini, Llama & more."}
                                 </p>
+                            </div>
+
+                            <div>
+                                <label className="block text-slate-400 text-sm mb-2 font-medium">AI Model</label>
+                                <select
+                                    value={selectedModel}
+                                    onChange={(e) => {
+                                        const m = e.target.value as AIModelId;
+                                        setSelectedModel(m);
+                                        saveModel(m);
+                                    }}
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white outline-none focus:border-purple-500 transition-colors"
+                                >
+                                    {Object.entries(AI_MODELS).map(([id, label]) => (
+                                        <option key={id} value={id} className="bg-slate-900 text-white">
+                                            {label}
+                                        </option>
+                                    ))}
+                                </select>
+                                <p className="text-xs text-slate-500 mt-1">Free models don't require a paid plan.</p>
                             </div>
 
                             <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">

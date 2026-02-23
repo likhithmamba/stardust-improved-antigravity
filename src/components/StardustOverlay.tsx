@@ -13,7 +13,10 @@ export const StardustOverlay: React.FC = () => {
         setDesignSystem(designSystem === 'zero-point' ? 'solar' : 'zero-point');
     };
 
-
+    // Only render StardustOverlay in 'free' mode — all other modes have
+    // dedicated Chrome components rendered by DashboardOverlay
+    const CHROME_MODES = ['void', 'matrix', 'prism', 'orbital', 'timeline'];
+    if (CHROME_MODES.includes(viewMode)) return null;
 
     return (
         <>

@@ -1,0 +1,57 @@
+On branch stardust-improved-2.0
+Your branch is up to date with 'origin/stardust-improved-2.0'.
+
+Last command done (1 command done):
+   pick 3e07627 Initial commit of Stardust project
+Next command to do (1 remaining command):
+   pick a41c320 feat: Integrate cognitive engines with UI layout strategies
+  (use "git rebase --edit-todo" to view and edit)
+You are currently editing a commit while rebasing branch 'stardust-improved-2.0' on '72d0dec'.
+  (use "git commit --amend" to amend the current commit)
+  (use "git rebase --continue" once you are satisfied with your changes)
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   src/App.tsx
+	modified:   src/components/CanvasViewport.tsx
+	modified:   src/components/DashboardOverlay.tsx
+	modified:   src/components/NotesChoiceRing.tsx
+	modified:   src/components/PlanetNote.tsx
+	modified:   src/components/SettingsPanel.tsx
+	modified:   src/components/StardustOverlay.tsx
+	deleted:    src/core/appController.ts
+	deleted:    src/core/integrationDemo.ts
+	deleted:    src/core/matrixEngine.backup.ts
+	deleted:    src/core/matrixEngine.ts
+	deleted:    src/core/orbitalPhysics.ts
+	deleted:    src/core/persistence.backup.ts
+	deleted:    src/core/persistence.ts
+	deleted:    src/core/prismEngine.ts
+	deleted:    src/core/stateManager.ts
+	deleted:    src/core/timelineEngine.ts
+	modified:   src/engine/World.ts
+	modified:   src/engine/types/EngineTypes.ts
+	modified:   src/hooks/useEngine.ts
+	modified:   src/index.css
+	modified:   src/index.ts
+	modified:   src/pages/LandingUltimate.tsx
+	modified:   src/store/useStore.ts
+	deleted:    src/systems/PhysicsEngine.ts
+	deleted:    src/systems/PhysicsLoop.tsx
+	deleted:    src/types.ts
+	deleted:    src/types2.ts
+	modified:   src/utils/ai.ts
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	git_status.txt
+	src/components/AppShell.tsx
+	src/hooks/useKeyboardShortcuts.ts
+	src/hooks/useModePhysics.ts
+	src/hooks/useZoomLOD.ts
+	src/pages/LandingPage.css
+	src/pages/landing/
+	src/utils/noteSize.ts
+
+no changes added to commit (use "git add" and/or "git commit -a")

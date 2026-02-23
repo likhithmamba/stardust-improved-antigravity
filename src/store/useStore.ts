@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { initDB } from '../db/idb';
 import { NoteType } from '../constants';
 import type { ViewMode } from '../constants';
+import { useSettingsStore } from '../ui/settings/settingsStore';
 
 export type Note = {
     id: string;
@@ -145,6 +146,12 @@ const loadSettings = () => {
 
 const initialSettings = loadSettings();
 
+// Incremental DB save tracking (Bug B6 fix)
+const dirtyNoteIds = new Set<string>();
+const deletedNoteIds = new Set<string>();
+const dirtyConnectionIds = new Set<string>();
+const deletedConnectionIds = new Set<string>();
+
 export const useStore = create<State>((set, get) => ({
     notes: [],
     connections: [],
@@ -155,42 +162,47 @@ export const useStore = create<State>((set, get) => ({
     addNote: (n) => {
         const noteWithMeta = { ...n, createdAt: Date.now(), updatedAt: Date.now() };
         set((s) => ({ notes: [...s.notes, noteWithMeta] }));
-        saveDataToDB(get().notes, get().connections);
+        dirtyNoteIds.add(n.id);
+        debouncedSave();
     },
     updateNote: (id, patch) => {
         set((s) => ({ notes: s.notes.map((n) => (n.id === id ? { ...n, ...patch, updatedAt: Date.now() } : n)) }));
-        saveDataToDB(get().notes, get().connections);
+        dirtyNoteIds.add(id);
+        debouncedSave();
     },
     deleteNote: (id) => {
         set((s) => {
-            // Optimization: Single pass for connections if possible, or just cleaner ref
             const notes = s.notes.filter((n) => n.id !== id);
             const connections = s.connections.filter((c) => c.from !== id && c.to !== id);
             return { notes, connections };
         });
-        saveDataToDB(get().notes, get().connections); // This reads from get() which might be stale if set is async/batched? No, zustand set is sync usually. 
-        // Actually, better to pass the new values to saveDataToDB directly to avoid race conditions or getters.
-        // But get() is fine here.
+        deletedNoteIds.add(id);
+        dirtyNoteIds.delete(id);
+        debouncedSave();
     },
     addConnection: (c) => {
         set((s) => ({ connections: [...s.connections, c] }));
-        saveDataToDB(get().notes, get().connections);
+        dirtyConnectionIds.add(c.id);
+        debouncedSave();
     },
     updateConnection: (id, patch) => {
         set((s) => ({ connections: s.connections.map((c) => (c.id === id ? { ...c, ...patch } : c)) }));
-        saveDataToDB(get().notes, get().connections);
+        dirtyConnectionIds.add(id);
+        debouncedSave();
     },
     removeConnection: (id) => {
         set((s) => ({ connections: s.connections.filter((c) => c.id !== id) }));
-        saveDataToDB(get().notes, get().connections);
+        deletedConnectionIds.add(id);
+        dirtyConnectionIds.delete(id);
+        debouncedSave();
     },
     setViewport: (viewport) => set({ viewport }),
     setSelectedId: (id) => set({ selectedId: id }),
     setFocusModeId: (id) => set({ focusModeId: id }),
     setSettingsOpen: (isOpen) => set({ isSettingsOpen: isOpen }),
-    setContents: (notes: Note[], connections: Connection[]) => { // Renamed or New Action
+    setContents: (notes: Note[], connections: Connection[]) => {
         set({ notes, connections });
-        saveDataToDB(notes, connections);
+        fullSaveToDB();
     },
     setNotes: (notes) => set({ notes }),
     setConnections: (connections) => set({ connections }),
@@ -288,12 +300,14 @@ export const useStore = create<State>((set, get) => ({
     exportData: async () => {
         try {
             const state = get();
+            const settings = useSettingsStore.getState();
             const data = {
-                version: 1,
+                version: 2,
                 timestamp: Date.now(),
                 notes: state.notes,
                 connections: state.connections,
-                viewMode: state.viewMode // Save the Mode
+                viewMode: settings.viewMode,
+                designSystem: settings.designSystem,
             };
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
 
@@ -332,9 +346,12 @@ export const useStore = create<State>((set, get) => ({
                 set({
                     notes: data.notes,
                     connections: data.connections || [],
-                    viewMode: data.viewMode || 'free' // Restore Mode
                 });
-                saveDataToDB(data.notes, data.connections || []);
+                // Restore settings to settingsStore
+                const settings = useSettingsStore.getState();
+                if (data.viewMode) settings.setViewMode(data.viewMode);
+                if (data.designSystem) settings.setDesignSystem(data.designSystem);
+                fullSaveToDB();
                 console.log('Imported successfully');
             }
         } catch (err: any) {
@@ -343,33 +360,73 @@ export const useStore = create<State>((set, get) => ({
     },
 }));
 
-// Debounce save
+// Incremental debounced save — only writes changed records (Bug B6 fix)
 let saveTimeout: ReturnType<typeof setTimeout> | undefined;
-const saveDataToDB = (notes: Note[], connections: Connection[]) => {
+const debouncedSave = () => {
     clearTimeout(saveTimeout);
     saveTimeout = setTimeout(async () => {
         try {
+            if (dirtyNoteIds.size === 0 && deletedNoteIds.size === 0 &&
+                dirtyConnectionIds.size === 0 && deletedConnectionIds.size === 0) return;
+
             const db = await initDB();
             const tx = db.transaction(['notes', 'connections'], 'readwrite');
-
             const noteStore = tx.objectStore('notes');
             const connStore = tx.objectStore('connections');
+            const state = useStore.getState();
 
-            // Clear existing
-            await Promise.all([noteStore.clear(), connStore.clear()]);
+            // Write dirty notes
+            for (const id of dirtyNoteIds) {
+                const note = state.notes.find(n => n.id === id);
+                if (note) await noteStore.put(note);
+            }
+            // Delete removed notes
+            for (const id of deletedNoteIds) {
+                await noteStore.delete(id);
+            }
+            // Write dirty connections
+            for (const id of dirtyConnectionIds) {
+                const conn = state.connections.find(c => c.id === id);
+                if (conn) await connStore.put(conn);
+            }
+            // Delete removed connections
+            for (const id of deletedConnectionIds) {
+                await connStore.delete(id);
+            }
 
-            // Bulk Put - Parallelize
-            const notePromises = notes.map(note => noteStore.put(note));
-            const connPromises = connections.map(conn => connStore.put(conn));
-
-            await Promise.all([...notePromises, ...connPromises]);
+            dirtyNoteIds.clear();
+            deletedNoteIds.clear();
+            dirtyConnectionIds.clear();
+            deletedConnectionIds.clear();
 
             await tx.done;
-            console.log('Saved to IndexedDB');
         } catch (e) {
             console.error('Failed to save to DB:', e);
         }
     }, 500);
+};
+
+// Full save for bulk operations (import, setContents)
+const fullSaveToDB = async () => {
+    try {
+        const state = useStore.getState();
+        const db = await initDB();
+        const tx = db.transaction(['notes', 'connections'], 'readwrite');
+        const noteStore = tx.objectStore('notes');
+        const connStore = tx.objectStore('connections');
+        await Promise.all([noteStore.clear(), connStore.clear()]);
+        await Promise.all([
+            ...state.notes.map(note => noteStore.put(note)),
+            ...state.connections.map(conn => connStore.put(conn)),
+        ]);
+        await tx.done;
+        dirtyNoteIds.clear();
+        deletedNoteIds.clear();
+        dirtyConnectionIds.clear();
+        deletedConnectionIds.clear();
+    } catch (e) {
+        console.error('Failed to save to DB:', e);
+    }
 };
 
 // Load on init

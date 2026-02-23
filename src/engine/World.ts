@@ -86,7 +86,8 @@ export class World {
     }
 
     public setMode(mode: LayoutMode) {
-        this.mode = mode;
+        const SUPPORTED_MODES: LayoutMode[] = ['free', 'void', 'orbital', 'matrix', 'prism', 'timeline'];
+        this.mode = SUPPORTED_MODES.includes(mode) ? mode : 'free';
         // Optionally freeze physics or reset velocities here
     }
 

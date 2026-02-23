@@ -34,6 +34,31 @@
   /* Dark Mode Overrides applied via class */
 }
 
+/* ── Stitch Animations ── */
+@keyframes slowBreath {
+
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes pulseGlow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(25, 25, 230, 0.1);
+  }
+
+  50% {
+    box-shadow: 0 0 40px rgba(25, 25, 230, 0.2);
+  }
+}
+
 .dark {
   --bg-color: #020617;
   --text-primary: #f1f5f9;
@@ -44,6 +69,106 @@
   --panel-bg: rgba(15, 23, 42, 0.8);
   --glass-border: rgba(255, 255, 255, 0.1);
   --planet-glass: rgba(30, 41, 59, 0.7);
+}
+
+/* ============================================
+   DESIGN SYSTEM: Solar Strategy (Light Mode)
+   ============================================ */
+html.solar {
+  --bg-color: #ffffff;
+  --text-primary: #1a1a1a;
+  --text-secondary: #71717a;
+  --accent-border: #e4e4e7;
+  --panel-bg: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --planet-glass: rgba(255, 255, 255, 0.65);
+  --mode-accent: #3b82f6;
+}
+
+html.solar[data-mode="void"] {
+  --bg-color: #ffffff;
+  --mode-accent: #c4b5fd;
+  /* lavender */
+  --mode-font: 'Lora', serif;
+}
+
+html.solar[data-mode="matrix"] {
+  --bg-color: #fffbf0;
+  --mode-accent: #f27f0d;
+  /* amber */
+  --mode-font: 'Space Grotesk', sans-serif;
+}
+
+html.solar[data-mode="prism"] {
+  --bg-color: #f8f9fa;
+  --mode-accent: #71717a;
+  /* zinc neutral */
+  --mode-font: 'Inter', sans-serif;
+}
+
+html.solar[data-mode="orbital"] {
+  --bg-color: #ffffff;
+  --mode-accent: #3b82f6;
+  /* blue */
+  --mode-font: 'Cinzel', serif;
+}
+
+html.solar[data-mode="timeline"] {
+  --bg-color: #05070a;
+  --mode-accent: #00f2ff;
+  /* cyan */
+  --mode-font: 'Fira Code', monospace;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+}
+
+/* ============================================
+   DESIGN SYSTEM: Zero-Point (Dark Mode)
+   ============================================ */
+html.zero-point {
+  --bg-color: #020617;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --accent-border: #1e293b;
+  --panel-bg: rgba(15, 23, 42, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --planet-glass: rgba(30, 41, 59, 0.7);
+  --mode-accent: #6366f1;
+}
+
+html.zero-point[data-mode="void"] {
+  --bg-color: #050510;
+  --mode-accent: #1919e6;
+  /* cobalt */
+  --mode-font: 'Newsreader', serif;
+}
+
+html.zero-point[data-mode="matrix"] {
+  --bg-color: #020617;
+  --mode-accent: #3b82f6;
+  /* blue */
+  --mode-font: 'Manrope', sans-serif;
+}
+
+html.zero-point[data-mode="prism"] {
+  --bg-color: #020617;
+  --mode-accent: #1919e6;
+  /* cobalt */
+  --mode-font: 'Newsreader', serif;
+}
+
+html.zero-point[data-mode="orbital"] {
+  --bg-color: #020617;
+  --mode-accent: #6366f1;
+  /* indigo */
+  --mode-font: 'Newsreader', serif;
+}
+
+html.zero-point[data-mode="timeline"] {
+  --bg-color: #050510;
+  --mode-accent: #eebd2b;
+  /* amber */
+  --mode-font: 'Manrope', sans-serif;
 }
 
 body {
@@ -111,12 +236,12 @@ body {
 }
 
 .note-planet:hover {
-  transform: scale(1.05);
-  /* Managed by React */
+  /* Do NOT use transform here — VisualRegistry owns transform */
   box-shadow:
     inset 0 0 30px rgba(255, 255, 255, 0.8),
     0 15px 40px rgba(0, 0, 0, 0.1),
     0 5px 15px rgba(59, 130, 246, 0.1);
+  filter: brightness(1.1);
   border-color: #f0f9ff;
   z-index: 30;
 }

@@ -42,4 +42,5 @@ export interface WorldConfig {
     centerY: number;
 }
 
-export type LayoutMode = 'free' | 'orbital' | 'timeline' | 'matrix' | 'prism' | 'void';
+export type LayoutMode = 'free' | 'void' | 'orbital' | 'matrix' | 'prism' |
+    'timeline' | 'constellation' | 'archive' | 'stream' | 'nebula' | 'project';

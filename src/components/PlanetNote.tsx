@@ -1,12 +1,13 @@
 import React, { useRef, useState } from 'react';
 import { useGesture } from '@use-gesture/react';
 import { useStore, type Note } from '../store/useStore';
-import { NOTE_STYLES, NoteType, REAL_SIZES, type ViewMode } from '../constants';
+import { NOTE_STYLES, NoteType, type ViewMode } from '../constants';
 import { ViewConstraints } from '../systems/ViewConstraints';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
 import { analyzeContent } from '../utils/intelligence';
 import { visualRegistry } from '../engine/render/VisualRegistry';
+import { useZoomLOD, type ZoomLOD } from '../hooks/useZoomLOD';
 
 
 interface PlanetNoteProps {
@@ -32,7 +33,6 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
 }) => {
     const updateNote = useStore((state) => state.updateNote);
     const setSelectedId = useStore((state) => state.setSelectedId);
-    const scaleMode = useStore((state) => state.scaleMode);
 
     // Pro/Ultra Checks
     const proMode = useStore((state) => state.proMode);
@@ -46,6 +46,9 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
     // Unified Type: Always use the node's actual type
     const effectiveType = note.type;
     const baseStyle = NOTE_STYLES[effectiveType] || NOTE_STYLES[NoteType.Asteroid];
+
+    // LOD: Zoom-based Level of Detail
+    const lod: ZoomLOD = useZoomLOD();
 
     // Allow mutating style for local needs or clone it
     const style = { ...baseStyle };
@@ -97,11 +100,10 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
         return '12px';
     }, [note.title, note.fontSize]);
 
-    // Compute Size
-    let size = scaleMode === 'real'
-        ? (REAL_SIZES[note.type] || 64)
-        : style.width;
+    // Compute Size — use original NOTE_STYLES sizes (known working)
+    let size = style.width;
 
+    // Enhanced sizes in pro/ultra free mode
     if (isEnhanced && viewMode === 'free') {
         if (note.type === NoteType.Nebula) size = 1600;
         else if (note.type === NoteType.Galaxy) size = 1200;
@@ -113,8 +115,10 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
         else if (note.type === NoteType.Asteroid || note.type === NoteType.Comet) size = 180;
     }
 
-    // Unified Size: Allow mass-based sizing in all modes
-    // if (isStructuredMode) { size = 150; } // REMOVED: User wants "Mass = Size" in Orbital as well
+    // LOD: Only affects text visibility — never size (to avoid layout breakage)
+    const showText = true; // Always show text — LOD text gating was too aggressive
+    const showContent = lod === 'surface' || lod === 'planet';
+    const showAsMinimalDot = false; // Disabled — was rendering notes as tiny invisible dots
 
     const bind = useGesture({
         onDragStart: ({ event }) => {
@@ -223,10 +227,7 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
 
         // Special case for Welcome Nebula
         if (note.id === 'welcome-nebula') {
-            const confirmDismiss = true;
-            if (confirmDismiss) {
-                deleteNote(note.id);
-            }
+            deleteNote(note.id);
             return;
         }
 
@@ -236,7 +237,7 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
             return;
         }
 
-        // Smart Zoom (Pro Mode)
+        // Smart Zoom + Edit: If far away and proMode, zoom first then enter edit
         if (proMode) {
             const w = window.innerWidth;
             const h = window.innerHeight;
@@ -248,10 +249,11 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
 
             if (dist > 100 || Math.abs(viewport.zoom - 1) > 0.2) {
                 setViewport({ x: targetX, y: targetY, zoom: 1 });
-                return;
+                // Don't return — still enter edit mode after zoom
             }
         }
 
+        // Always enter edit mode on double-click
         setIsEditing(true);
         setTimeout(() => {
             if (contentRef.current) {
@@ -284,6 +286,27 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
     // REFACTOR: Separate Engine Position (Outer) and React Appearance (Inner)
     // This wrapper is controlled by VisualRegistry and completely ignored by React reconciliation
     // regarding the 'transform' style, because we don't set 'style' prop on it (except initial).
+
+    // LOD: At galaxy/system zoom levels, render a minimal dot instead of the full planet
+    if (showAsMinimalDot) {
+        return (
+            <div
+                ref={noteRef}
+                data-note-id={note.id}
+                className="absolute top-0 left-0"
+            >
+                <div
+                    style={{
+                        width: size,
+                        height: size,
+                        borderRadius: '50%',
+                        background: note.color || visualColor || baseStyle.color || '#6366f1',
+                        opacity: 0.8,
+                    }}
+                />
+            </div>
+        );
+    }
 
     return (
         <div
@@ -370,14 +393,14 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
                     className={clsx(
                         "absolute inset-0 z-20 flex items-center justify-center text-center p-[15%]",
                         "whitespace-pre-wrap break-words outline-none",
-                        isEditing ? "overflow-y-auto cursor-text" : "cursor-pointer overflow-hidden"
+                        showContent && isEditing ? "overflow-y-auto cursor-text" : "cursor-pointer overflow-hidden"
                     )}
                     style={{
                         fontSize: fontSize,
                         color: note.textColor || 'white',
                         textShadow: '0 2px 4px rgba(0,0,0,0.5)'
                     }}
-                    contentEditable={isEditing}
+                    contentEditable={showContent && isEditing}
                     suppressContentEditableWarning
                     onBlur={handleBlur}
                     onPointerDown={(e) => isEditing && e.stopPropagation()}
@@ -388,7 +411,7 @@ const PlanetNoteComponent: React.FC<PlanetNoteProps> = ({
                         }
                     }}
                 >
-                    {note.title || style.label}
+                    {showText && (note.title || style.label)}
                 </div>
 
                 {/* Shared Selection Ring */}

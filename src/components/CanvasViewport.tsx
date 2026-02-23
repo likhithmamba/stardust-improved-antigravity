@@ -25,8 +25,8 @@ import { soundManager } from '../utils/sound';
 
 import { DecayOverlay } from './modes/DecayView';
 import { NotesChoiceRing } from './NotesChoiceRing';
-import { DashboardOverlay } from './DashboardOverlay';
 import { DashboardBackground } from './DashboardBackground';
+import { AppShell } from './AppShell';
 
 export const CanvasViewport: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -213,13 +213,29 @@ export const CanvasViewport: React.FC = () => {
 
             setViewport({ ...viewport, x: viewport.x + dx, y: viewport.y + dy });
         },
-        onWheel: ({ delta: [_dx, dy], ctrlKey }) => {
-            if (ctrlKey) {
-                const zoomFactor = dy > 0 ? 0.9 : 1.1;
+        onWheel: ({ delta: [dx, dy], ctrlKey, event }) => {
+            // Plain scroll = zoom (natural, like Figma/Miro)
+            // Ctrl+scroll = pan
+            if (!ctrlKey) {
+                const zoomFactor = dy > 0 ? 0.95 : 1.05;
                 const newZoom = Math.max(0.1, Math.min(5, viewport.zoom * zoomFactor));
-                setViewport({ ...viewport, zoom: newZoom });
+
+                // Cursor-centric zoom: zoom toward mouse position
+                const rect = containerRef.current?.getBoundingClientRect();
+                if (rect && event) {
+                    const mouseEvent = event as WheelEvent;
+                    const mx = mouseEvent.clientX - rect.left;
+                    const my = mouseEvent.clientY - rect.top;
+                    const scale = newZoom / viewport.zoom;
+                    const newX = mx - (mx - viewport.x) * scale;
+                    const newY = my - (my - viewport.y) * scale;
+                    setViewport({ x: newX, y: newY, zoom: newZoom });
+                } else {
+                    setViewport({ ...viewport, zoom: newZoom });
+                }
             } else {
-                setViewport({ ...viewport, x: viewport.x - _dx, y: viewport.y - dy });
+                // Ctrl+scroll = pan
+                setViewport({ ...viewport, x: viewport.x - dx, y: viewport.y - dy });
             }
         },
         onPointerDown: ({ event }) => {
@@ -353,12 +369,8 @@ export const CanvasViewport: React.FC = () => {
         }
     };
 
-    const visibleNotes = notes.filter(n => {
-        if (viewMode === 'free') {
-            return n.originMode === 'free' || n.originMode === undefined;
-        }
-        return n.originMode === viewMode;
-    });
+    // Show all notes in all modes — no originMode filtering
+    const visibleNotes = notes;
 
     const handleCreateNote = (type: NoteType) => {
         if (creationMenu || sphericalMenu) {
@@ -571,8 +583,8 @@ export const CanvasViewport: React.FC = () => {
             {showMinimap && <MiniMap />}
             <CanvasInputHandler />
 
-            {/* MAIN DASHBOARD CHROME */}
-            <DashboardOverlay />
+            {/* UNIFIED APP SHELL */}
+            <AppShell />
         </div>
     );
 };

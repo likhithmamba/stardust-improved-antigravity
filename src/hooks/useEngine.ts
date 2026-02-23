@@ -27,19 +27,15 @@ export const useEngine = () => {
         engine.getWorld().syncConnections(connections);
     }, [connections]);
 
-    // Sync Viewport
+    // Sync Viewport — convert translate offset to world-center coordinates
     useEffect(() => {
         engine.updateConfig({
             width: window.innerWidth,
             height: window.innerHeight,
             zoom: viewport.zoom,
-            x: viewport.x, // Engine expects World Center x/y usually, wait. 
-            y: viewport.y  // Viewport.x/y in store is usually top-left or center? 
-            // In CanvasViewport: translate(viewport.x, viewport.y). 
-            // So these are translation offsets. 
-            // Engine.world.camera is expecting Center World Coords.
+            x: (-viewport.x + window.innerWidth / 2) / viewport.zoom,
+            y: (-viewport.y + window.innerHeight / 2) / viewport.zoom,
         });
-        // We might need to map Viewport Props -> World Camera Props
     }, [viewport]);
 
     // Sync Mode
